@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <sys/ioctl.h>
 #include <sys/ttycom.h>
 #include <unistd.h>
