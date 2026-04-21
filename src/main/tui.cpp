@@ -30,9 +30,17 @@ void Tui::render() {
         if (r+1 != height) {
             std::cout << std::endl;
         } else {
-            std::cout << "\x1b[0m";
+            // make sure terminal buffer is immediately written
+            std::cout << std::flush;
         }
     }
+}
+
+void Tui::cleanup() {
+    // reshow cursor
+    std::cout << "\033[?25h";
+    // clear any custom highlighting
+    std::cout << "\x1b[0m";
 }
 
 void Tui::getTerminalDimensions(int* width, int* height) {

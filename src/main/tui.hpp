@@ -7,6 +7,7 @@
 class Tui {
 public:
     void render();
+    void cleanup();
 
 private:
     void getTerminalDimensions(int* width, int* height);
