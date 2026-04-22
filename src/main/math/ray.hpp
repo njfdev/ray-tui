@@ -1,4 +1,5 @@
-#include "./Vec3.hpp"
+#pragma once
+#include "./vec3.hpp"
 
 class Ray {
 public:
