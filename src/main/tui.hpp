@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sys/ioctl.h>
-#include <sys/ttycom.h>
 #include <unistd.h>
 
 class Tui {

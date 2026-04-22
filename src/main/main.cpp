@@ -2,6 +2,7 @@
 #include <csignal>
 #include <iostream>
 #include <thread>
+#include <atomic>
 
 #include "tui.hpp"
 
