@@ -18,7 +18,8 @@ int main(int argc, char *argv[])
 
     Tui tui;
     while (!isInterrupted) {
-        tui.render();
+        RenderSource src = RenderSource();
+        tui.render(src);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 

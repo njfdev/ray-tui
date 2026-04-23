@@ -2,9 +2,13 @@
 #include "math/object.hpp"
 #include "math/vec3.hpp"
 #include "scene/color.hpp"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
+#include <iomanip>
+#include <iostream>
 #include <optional>
 #include <utility>
 
@@ -41,6 +45,8 @@ void Scene::render(Color framebuffer[], std::array<int, 2> res, Ray fwd) {
   Vec3 up = (fwd.direction ^ Vec3{0.0, 0.0, 1.0}).normalize();
   Vec3 right = (fwd.direction ^ up).normalize();
 
+  double minD = INFINITY;
+  double maxD = -INFINITY;
   for (int iy = 0; iy < res[1]; iy++) {
     for (int ix = 0; ix < res[0]; ix++) {
       // Pixel center in NDC, range [-1, 1]
@@ -57,9 +63,12 @@ void Scene::render(Color framebuffer[], std::array<int, 2> res, Ray fwd) {
       if (hit.has_value()) {
         double depth = (hit->first.p - fwd.origin).length();
 
-        std::byte b = (std::byte)(((int)depth) & 0xFF);
+        int r = (int)((depth-1.30)*15*255);
 
-        framebuffer[iy * res[0] + ix] = Color{b,b,b};
+        minD = std::min(minD, depth);
+        maxD = std::max(maxD, depth);
+
+        framebuffer[iy * res[0] + ix] = Color{r,r,r};
       } else {
         framebuffer[iy * res[0] + ix] = background;
       }

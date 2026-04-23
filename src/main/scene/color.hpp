@@ -1,4 +1,4 @@
 #pragma once
 #include <array>
 
-using Color = std::array<std::byte, 3>;
+using Color = std::array<int, 3>;
