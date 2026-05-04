@@ -2,45 +2,45 @@
 
 constexpr double EPSILON = 1e-6;
 
-bool solveQuadratic(const double &b, const double &c, double &x0, double &x1) {
-  double discr = b * b - 4 * c;
-  if (discr < 0)
-    return false;
-  else if (discr == 0)
-    x0 = x1 = -0.5 * b;
-  else {
-    double q = (b > 0) ? -0.5 * (b + sqrt(discr)) : -0.5 * (b - sqrt(discr));
-    x0 = q;
-    x1 = c / q;
-  }
-  if (x0 > x1)
-    std::swap(x0, x1);
-
-  return true;
-}
-
-// from
-// https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection.html
-// with changes: assumed ray.direction is normalized, doubles instead of floats.
 std::optional<Intersection> Sphere::intersect(const Ray &ray) {
-  double t0, t1; // solutions for t if the ray intersects
-  // Analytic solution
-  Vec3 L = ray.origin - origin;
-  double b = 2.0 * (ray.direction * L);
-  double c = L * L - radius * radius;
-  if (!solveQuadratic(b, c, t0, t1))
+  // tried analytical approach and it wasnt working for some reason, using
+  // geometric.
+  //
+  // O: ray origin
+  // S: sphere origin
+  // A: closest point on ray to sphere center (right angle at this point)
+  // I: actual intersection point
+  //
+  // right triangle OSA with A being right angle
+  //
+  // right triangle ISA with A being right angle
+
+  // ray origin->sphere center
+  Vec3 OS = origin - ray.origin;
+  // project onto ray dir, dir is normalized so this is same as length of OA
+  double oa = OS * ray.direction;
+
+  // sqr dist from sphere center to A
+  double sa2 = OS * OS - oa * oa;
+  double r2 = radius * radius;
+
+  // if closest ray dist > radius -> no intersection
+  if (sa2 > r2)
     return {};
-  if (t0 > t1)
-    std::swap(t0, t1);
 
-  if (t0 < 0) {
-    t0 = t1; // If t0 is negative, let's use t1 instead.
-    if (t0 < 0)
-      return {}; // Both t0 and t1 are negative.
-  }
+  // two intersection points will be at length (oa +- ai) along ray
+  double ai = std::sqrt(r2 - sa2);
 
-  double t = t0;
-  Vec3 p = ray.origin + t * ray.direction;
+  // first possible intersection distance along the ray
+  double t0 = oa - ai;
+  // if t0 is behind ray origin, try second intersection point
+  if (t0 < 0.0)
+    t0 = oa + ai;
+  // if both intersections are behind ray origin, no intersection
+  if (t0 < 0.0)
+    return {};
+
+  Vec3 p = ray.origin + t0 * ray.direction;
   Vec3 normal = (p - origin).normalize();
 
   // spherical coordinates for uv
@@ -56,8 +56,8 @@ std::optional<Intersection> Sphere::intersect(const Ray &ray) {
 std::optional<Intersection> Plane::intersect(const Ray &ray) {
   double denom = (ray.direction * normal);
 
-  // ray and normal must be in opposite directions (ray must go towards
-  // normal-out face)
+  // ray must have a negative component along normal for it to collide
+  // (because ray travels in +dir direction)
   if (denom > -EPSILON)
     return {};
 
@@ -70,13 +70,15 @@ std::optional<Intersection> Plane::intersect(const Ray &ray) {
   Vec3 p = t * ray.direction + ray.origin;
   Vec3 d = p - origin;
 
-  // what we're doing:
+  // below are simplified cross products, doing the same as the commented code:
   // Vec3 uAxis = (Vec3 {0.0,0.0,1.0}^normal).normalize();
   // Vec3 vAxis = uAxis^normal;
   // double u = d*uAxis;
   // double v = d*vAxis;
 
   Vec3 uAxis = (Vec3{-normal.y, normal.x, 0.0}).normalize();
+
+  // uAxis and normal are perpendicular and normalized, so their cross will be normalized already.
   Vec3 vAxis = Vec3{// y*rhs.z - z*rhs.y -> y*rhs.z -> uAxis.x*normal.z
                     normal.x * normal.z,
                     // z*rhs.x - x*rhs.z -> -x*rhs.z -> uAxis.y*normal.z,

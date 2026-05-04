@@ -42,11 +42,9 @@ void Scene::render(Color framebuffer[], std::array<int, 2> res, Ray fwd) {
   double tanH = std::tan(fovh * 0.5);
   double tanV = std::tan(fovv * 0.5);
 
-  Vec3 up = (fwd.direction ^ Vec3{0.0, 0.0, 1.0}).normalize();
-  Vec3 right = (fwd.direction ^ up).normalize();
+  Vec3 right = (fwd.direction ^ Vec3{0.0, 0.0, 1.0}).normalize();
+  Vec3 up = (right ^ fwd.direction).normalize();
 
-  double minD = INFINITY;
-  double maxD = -INFINITY;
   for (int iy = 0; iy < res[1]; iy++) {
     for (int ix = 0; ix < res[0]; ix++) {
       // Pixel center in NDC, range [-1, 1]
@@ -57,18 +55,13 @@ void Scene::render(Color framebuffer[], std::array<int, 2> res, Ray fwd) {
       Vec3 dir = (fwd.direction + right * (ndcX * tanH) + up * (ndcY * tanV))
                      .normalize();
 
-      Ray ray{fwd.origin, dir};
+      Ray ray{dir, fwd.origin};
 
       auto hit = trace(ray);
       if (hit.has_value()) {
         double depth = (hit->first.p - fwd.origin).length();
 
-        int r = (int)((depth-1.30)*15*255);
-
-        minD = std::min(minD, depth);
-        maxD = std::max(maxD, depth);
-
-        framebuffer[iy * res[0] + ix] = Color{r,r,r};
+        framebuffer[iy * res[0] + ix] = hit->second.m.color;
       } else {
         framebuffer[iy * res[0] + ix] = background;
       }
