@@ -2,7 +2,8 @@
 #include "material.hpp"
 #include "math/object.hpp"
 #include "math/ray.hpp"
-#include "scene/color.hpp"
+#include "render/color.hpp"
+#include "render/framebuffer.hpp"
 #include "scene/light.hpp"
 #include <array>
 #include <vector>
@@ -25,7 +26,7 @@ public:
   Color background;
   double fovh;
 
-  void render(Color framebuffer[], std::array<int, 2> res, Ray camera);
+  void render(Framebuffer* fb, std::array<int, 2> res, Ray camera);
 
 private:
   std::optional<std::pair<Intersection, SceneObject>> trace(Ray &ray);

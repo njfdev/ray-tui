@@ -1,14 +1,11 @@
 #include "scene/scene.hpp"
 #include "math/object.hpp"
 #include "math/vec3.hpp"
-#include "scene/color.hpp"
+#include "render/framebuffer.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
 #include <optional>
 #include <utility>
 
@@ -36,7 +33,7 @@ std::optional<std::pair<Intersection, SceneObject>> Scene::trace(Ray &ray) {
   return std::optional(std::pair{i.value(), o.value()});
 }
 
-void Scene::render(Color framebuffer[], std::array<int, 2> res, Ray fwd) {
+void Scene::render(Framebuffer* fb, std::array<int, 2> res, Ray fwd) {
   double fovv = fovh * ((double)res[1]) / ((double)res[0]);
 
   double tanH = std::tan(fovh * 0.5);
@@ -61,9 +58,9 @@ void Scene::render(Color framebuffer[], std::array<int, 2> res, Ray fwd) {
       if (hit.has_value()) {
         double depth = (hit->first.p - fwd.origin).length();
 
-        framebuffer[iy * res[0] + ix] = hit->second.m.color;
+        fb->framebuffer.data()[iy * res[0] + ix] = hit->second.m.color;
       } else {
-        framebuffer[iy * res[0] + ix] = background;
+        fb->framebuffer.data()[iy * res[0] + ix] = background;
       }
     }
   }

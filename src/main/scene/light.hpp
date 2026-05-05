@@ -1,5 +1,5 @@
 #pragma once
-#include "color.hpp"
+#include "render/color.hpp"
 #include "math/vec3.hpp"
 
 struct PointLight {

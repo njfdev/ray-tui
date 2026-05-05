@@ -1,27 +1,28 @@
 #include <cstdlib>
 #include <csignal>
-#include <iostream>
-#include <thread>
-#include <atomic>
+#include "gameloop.hpp"
 
-#include "tui.hpp"
+class Game : public GameLoop {
 
-std::atomic<bool> isInterrupted(false);
-
-void signalHandler(int num) {
-    isInterrupted = true;
-}
-
-int main(int argc, char *argv[])
-{
-    std::signal(SIGINT, signalHandler);
-
-    Tui tui;
-    while (!isInterrupted) {
-        RenderSource src = RenderSource();
-        tui.render(src);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    void init() override {
     }
 
-    tui.cleanup();
+    void update() override {
+        for (int y = 0; y < height(); y++) {
+            for (int x = 0; x < width(); x++) {
+                fb.framebuffer.data()[y*width() + x] = {(int)((((double)x)/width())*255.0), (int)((((double)y)/height())*255), 0};
+            }
+        }
+    }
+
+    void cleanup() override {
+
+    }
+
+};
+
+int main() {
+    Game game{};
+
+    game.run();
 }
