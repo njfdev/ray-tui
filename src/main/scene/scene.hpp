@@ -1,16 +1,16 @@
 #pragma once
+
 #include "material.hpp"
-#include "math/object.hpp"
 #include "math/ray.hpp"
+#include "math/intersection.hpp"
 #include "render/color.hpp"
 #include "render/framebuffer.hpp"
 #include "scene/light.hpp"
-#include <array>
 #include <vector>
 
 struct SceneObject {
   Material m;
-  RayObject *obj;
+  Shape* shape;
 };
 
 struct BounceConfig {
@@ -21,15 +21,18 @@ struct BounceConfig {
 
 class Scene {
 public:
-  std::vector<SceneObject> objects;
   std::vector<PointLight> lights;
   Color background;
   double fovh;
-  int framecount;
+  int cur_frame;
 
-  void render(Framebuffer* fb, std::array<int, 2> res, Ray camera);
+  void render(Framebuffer* fb, Ray camera);
+
+  SceneObject* add_object(Shape shape, Material mat);
 
 private:
-  std::optional<std::pair<Intersection, SceneObject>> trace(Ray &ray);
+  std::vector<Shape> shapes;
+  std::vector<SceneObject> object_data;
+  Intersection trace(Ray &ray);
   double traceLight(Vec3 p, Vec3 normal, PointLight light);
 };

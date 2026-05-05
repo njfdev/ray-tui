@@ -1,8 +1,32 @@
-#include "shapes.hpp"
+#pragma once
 
-constexpr double EPSILON = 1e-6;
+#include "math/ray.hpp"
+#include "vec3.hpp"
+#include <cmath>
+#include <variant>
 
-std::optional<Intersection> Sphere::intersect(const Ray &ray) {
+struct SceneObject;
+
+struct Intersection {
+  double dist = INFINITY;
+  Vec3 p;
+  Vec3 normal;
+  SceneObject* obj = nullptr;
+
+  inline bool valid() { return dist != INFINITY; }
+};
+
+struct Sphere {
+  Vec3 origin;
+  double radius;
+};
+
+struct Plane {
+  Vec3 origin;
+  Vec3 normal;
+};
+
+inline Intersection intersect(const Ray &ray, const Sphere &sphere) {
   // tried analytical approach and it wasnt working for some reason, using
   // geometric.
   //
@@ -16,13 +40,13 @@ std::optional<Intersection> Sphere::intersect(const Ray &ray) {
   // right triangle ISA with A being right angle
 
   // ray origin->sphere center
-  Vec3 OS = origin - ray.origin;
+  Vec3 OS = sphere.origin - ray.origin;
   // project onto ray dir, dir is normalized so this is same as length of OA
   double oa = OS * ray.direction;
 
   // sqr dist from sphere center to A
   double sa2 = OS * OS - oa * oa;
-  double r2 = radius * radius;
+  double r2 = sphere.radius * sphere.radius;
 
   // if closest ray dist > radius -> no intersection
   if (sa2 > r2)
@@ -41,54 +65,37 @@ std::optional<Intersection> Sphere::intersect(const Ray &ray) {
     return {};
 
   Vec3 p = ray.origin + t0 * ray.direction;
-  Vec3 normal = (p - origin).normalize();
 
-  // spherical coordinates for uv
-  double u = atan2(normal.y, normal.x);
-  double v = acos(normal.z / radius);
+  Vec3 normal = (p - sphere.origin).normalize();
 
-  return std::optional<Intersection>(Intersection{p, normal, t0, u, v});
+  return Intersection{t0, p, normal};
 }
 
 // inspired by
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection.html
 // ray collides with face that has normal going out of it
-std::optional<Intersection> Plane::intersect(const Ray &ray) {
-  double denom = (ray.direction * normal);
+inline Intersection intersect(const Ray &ray, const Plane &plane) {
+  double denom = (ray.direction * plane.normal);
 
   // ray must have a negative component along normal for it to collide
   // (because ray travels in +dir direction)
   if (denom > 0.0)
     return {};
 
-  double t = ((origin - ray.origin) * normal) / denom;
+  double t = ((plane.origin - ray.origin) * plane.normal) / denom;
 
   // collision point cannot be behind ray origin
   if (t < 0.0)
     return {};
 
   Vec3 p = t * ray.direction + ray.origin;
-  Vec3 d = p - origin;
 
-  // below are simplified cross products, doing the same as the commented code:
-  // Vec3 uAxis = (Vec3 {0.0,0.0,1.0}^normal).normalize();
-  // Vec3 vAxis = uAxis^normal;
-  // double u = d*uAxis;
-  // double v = d*vAxis;
+  return Intersection{t, p, plane.normal};
+}
 
-  Vec3 uAxis = (Vec3{-normal.y, normal.x, 0.0}).normalize();
+using Shape = std::variant<Sphere, Plane>;
 
-  // uAxis and normal are perpendicular and normalized, so their cross will be
-  // normalized already.
-  Vec3 vAxis = Vec3{// y*rhs.z - z*rhs.y -> y*rhs.z -> uAxis.x*normal.z
-                    normal.x * normal.z,
-                    // z*rhs.x - x*rhs.z -> -x*rhs.z -> uAxis.y*normal.z,
-                    normal.y * normal.z,
-                    // x*rhs.y - y*rhs.x -> uAxis.x*normal.y - uAxis.y*normal.x
-                    -normal.y * normal.y - normal.x * normal.x};
-
-  double u = uAxis * d;
-  double v = vAxis * d;
-
-  return std::optional<Intersection>{Intersection{p, normal, t, u, v}};
+inline Intersection intersect(const Ray &r, const Shape &shape) {
+  // leaving normal unnormalized, normalizin
+  return std::visit([&](const auto &s) { return intersect(r, s); }, shape);
 }

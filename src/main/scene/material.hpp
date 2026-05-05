@@ -1,4 +1,5 @@
 #pragma once
+
 #include "render/color.hpp"
 
 struct Material {

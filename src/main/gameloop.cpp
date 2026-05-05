@@ -20,7 +20,7 @@ void GameLoop::run() {
     tui.getRenderDimensions(&screen_width, &screen_height);
 
     // resize framebuffer
-    fb.resize(screen_width*screen_height);
+    fb.resize(screen_width, screen_height);
 
     init();
 
@@ -34,7 +34,7 @@ void GameLoop::run() {
         // update terminal dimensions
         tui.getRenderDimensions(&screen_width, &screen_height);
         if(last_height != screen_height || last_width != screen_width) {
-            fb.resize(screen_width*screen_height);
+            fb.resize(screen_width, screen_height);
         }
         auto end = std::chrono::steady_clock::now();
         update(std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count()/1000.0);
