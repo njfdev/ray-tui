@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <csignal>
 #include "render/framebuffer.hpp"
 
@@ -16,7 +17,7 @@ protected:
     int height() { return screen_height; }
 
     virtual void init() = 0;
-    virtual void update() = 0;
+    virtual void update(double_t dt) = 0;
     virtual void cleanup() = 0;
 
 private:
