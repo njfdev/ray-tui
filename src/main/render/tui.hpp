@@ -5,7 +5,6 @@
 
 #include "render/framebuffer.hpp"
 
-
 class Tui {
 public:
     void render(Framebuffer &src);

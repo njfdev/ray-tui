@@ -25,9 +25,11 @@ public:
   std::vector<PointLight> lights;
   Color background;
   double fovh;
+  int framecount;
 
   void render(Framebuffer* fb, std::array<int, 2> res, Ray camera);
 
 private:
   std::optional<std::pair<Intersection, SceneObject>> trace(Ray &ray);
+  double traceLight(Vec3 p, Vec3 normal, PointLight light);
 };

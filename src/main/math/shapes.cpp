@@ -47,7 +47,7 @@ std::optional<Intersection> Sphere::intersect(const Ray &ray) {
   double u = atan2(normal.y, normal.x);
   double v = acos(normal.z / radius);
 
-  return std::optional<Intersection>(Intersection{p, normal, u, v});
+  return std::optional<Intersection>(Intersection{p, normal, t0, u, v});
 }
 
 // inspired by
@@ -58,13 +58,13 @@ std::optional<Intersection> Plane::intersect(const Ray &ray) {
 
   // ray must have a negative component along normal for it to collide
   // (because ray travels in +dir direction)
-  if (denom > -EPSILON)
+  if (denom > 0.0)
     return {};
 
   double t = ((origin - ray.origin) * normal) / denom;
 
   // collision point cannot be behind ray origin
-  if (t < EPSILON)
+  if (t < 0.0)
     return {};
 
   Vec3 p = t * ray.direction + ray.origin;
@@ -78,7 +78,8 @@ std::optional<Intersection> Plane::intersect(const Ray &ray) {
 
   Vec3 uAxis = (Vec3{-normal.y, normal.x, 0.0}).normalize();
 
-  // uAxis and normal are perpendicular and normalized, so their cross will be normalized already.
+  // uAxis and normal are perpendicular and normalized, so their cross will be
+  // normalized already.
   Vec3 vAxis = Vec3{// y*rhs.z - z*rhs.y -> y*rhs.z -> uAxis.x*normal.z
                     normal.x * normal.z,
                     // z*rhs.x - x*rhs.z -> -x*rhs.z -> uAxis.y*normal.z,
@@ -89,5 +90,5 @@ std::optional<Intersection> Plane::intersect(const Ray &ray) {
   double u = uAxis * d;
   double v = vAxis * d;
 
-  return std::optional<Intersection>{Intersection{p, normal, u, v}};
+  return std::optional<Intersection>{Intersection{p, normal, t, u, v}};
 }

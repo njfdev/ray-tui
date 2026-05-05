@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <csignal>
 #include "render/framebuffer.hpp"
 
 class GameLoop {

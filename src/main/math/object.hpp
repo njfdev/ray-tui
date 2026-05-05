@@ -6,6 +6,7 @@
 struct Intersection {
   Vec3 p;
   Vec3 normal;
+  double rayDist;
   double u;
   double v;
 };

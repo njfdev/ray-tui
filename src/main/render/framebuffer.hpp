@@ -1,23 +1,23 @@
 #pragma once
 
-#include <vector>
 #include "render/color.hpp"
+#include <vector>
 
 class Framebuffer {
 public:
-  std::vector<Color> framebuffer{};
+  std::vector<Pixel> framebuffer{};
 
   Framebuffer() {}
 
-  void resize(int w, int h, Color background = {0, 0, 0}) {
-      framebuffer.assign(w * h, background);
+  void resize(int w, int h, Pixel background = {}) {
+    framebuffer.assign(w * h, background);
   }
 
-  void resize(int length, Color background = {0, 0, 0}) {
-      framebuffer.assign(length, background);
+  void resize(int length, Pixel background = {}) {
+    framebuffer.assign(length, background);
   }
 
-  Color color(int x, int y, int width, int height) {
-    return framebuffer.at(y*width + x);
+  Pixel color(int x, int y, int width, int height) {
+    return framebuffer.at(y * width + x);
   }
 };

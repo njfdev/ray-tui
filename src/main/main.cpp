@@ -1,28 +1,28 @@
-#include <cstdlib>
-#include <csignal>
 #include "gameloop.hpp"
+#include <csignal>
+#include <cstdlib>
 
 class Game : public GameLoop {
 
-    void init() override {
+  void init() override {}
+
+  void update(double_t dt) override {
+    double w = width();
+    double h = height();
+    for (double y = 0; y < h; y++) {
+      for (double x = 0; x < w; x++) {
+        fb.framebuffer.data()[(int)y * width() + (int)x] =
+            Pixel{static_cast<uint8_t>(x / w * 255.0),
+                  static_cast<uint8_t>(y / h * 255.0), 0};
+      }
     }
+  }
 
-    void update(double_t dt) override {
-        for (int y = 0; y < height(); y++) {
-            for (int x = 0; x < width(); x++) {
-                fb.framebuffer.data()[y*width() + x] = {(int)((((double)x)/width())*255.0), (int)((((double)y)/height())*255), 0};
-            }
-        }
-    }
-
-    void cleanup() override {
-
-    }
-
+  void cleanup() override {}
 };
 
 int main() {
-    Game game{};
+  Game game{};
 
-    game.run();
+  game.run();
 }
