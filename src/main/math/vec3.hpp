@@ -2,9 +2,9 @@
 #include <cmath>
 
 struct Vec3 {
-  double x;
-  double y;
-  double z;
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
 
   inline double sqrLength() const { return x * x + y * y + z * z; }
 

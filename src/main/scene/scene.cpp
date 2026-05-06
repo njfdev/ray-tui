@@ -1,14 +1,15 @@
 #include "scene/scene.hpp"
+#include "math/intersection.hpp"
 #include "math/vec3.hpp"
 #include "render/framebuffer.hpp"
 #include "scene/light.hpp"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <iterator>
 
-Intersection Scene::trace(Ray &ray) {
+Intersection Scene::trace(Ray &ray, double min_dist) {
   double best_dist = INFINITY;
-  double min_dist = 1e-6;
 
   // default initialize as invalid
   Intersection best_hit{};
@@ -28,13 +29,31 @@ Intersection Scene::trace(Ray &ray) {
 }
 
 SceneObject* Scene::add_object(Shape shape, Material mat) {
-  this->shapes.push_back(shape);
+  if(!empty_slots.empty()) {
+    int i = empty_slots.top();
+    empty_slots.pop();
+    shapes[i] = shape;
 
-  this->object_data.push_back(SceneObject {
+    object_data[i] = SceneObject {
+      mat, &shapes[i]
+    };
+
+    return &object_data.at(i);
+  };
+
+  shapes.push_back(shape);
+
+  object_data.push_back(SceneObject {
     mat, &shapes.back()
   });
 
-  return &this->object_data.back();
+  return &object_data.back();
+}
+
+void Scene::remove_object(SceneObject* obj) {
+  int i = std::distance(object_data.data(), obj);
+  this->empty_slots.push(i);
+  shapes[i] = Disabled {};
 }
 
 void Scene::render(Framebuffer *fb, Ray fwd) {
@@ -68,7 +87,7 @@ void Scene::render(Framebuffer *fb, Ray fwd) {
 
       Color color = Color{};
       int lit = 0;
-      auto hit = trace(ray);
+      auto hit = trace(ray, 1e-5);
       if (hit.valid()) {
         for (auto light : lights) {
           double phong = this->traceLight(hit.p, hit.normal, light);
@@ -102,7 +121,7 @@ double Scene::traceLight(Vec3 p, Vec3 normal, PointLight light) {
   double light_len = light_offset.sqrLength();
   Vec3 light_dir = light_offset.normalize();
   Ray light_ray = Ray{light_dir, p};
-  Intersection light_hit = trace(light_ray);
+  Intersection light_hit = trace(light_ray, 0.01);
 
   // when ray dosent hit anything dist is +INFINITY, valid for lights.
   if (light_hit.dist * light_hit.dist >= light_len) {
@@ -110,5 +129,5 @@ double Scene::traceLight(Vec3 p, Vec3 normal, PointLight light) {
 
     return weight;
   }
-  return 0.1;
+  return 0.0;
 }

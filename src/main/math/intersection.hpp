@@ -71,6 +71,11 @@ inline Intersection intersect(const Ray &ray, const Sphere &sphere) {
   return Intersection{t0, p, normal};
 }
 
+struct Disabled {};
+inline Intersection intersect(const Ray &ray, const Disabled &disabled) {
+  return {};
+}
+
 // inspired by
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection.html
 // ray collides with face that has normal going out of it
@@ -93,7 +98,7 @@ inline Intersection intersect(const Ray &ray, const Plane &plane) {
   return Intersection{t, p, plane.normal};
 }
 
-using Shape = std::variant<Sphere, Plane>;
+using Shape = std::variant<Sphere, Plane, Disabled>;
 
 inline Intersection intersect(const Ray &r, const Shape &shape) {
   // leaving normal unnormalized, normalizin
