@@ -61,6 +61,7 @@ enum KeyCode {
 class Input {
 public:
     Input();
+    ~Input();
 
     void update();
 
@@ -70,5 +71,10 @@ public:
 private:
     RawInputs raw_inputs{};
     int keyCodeStates[255] = {0};
+
+    bool isTerminalFocused = true;
+
+    void updateFocusedStatus();
+    bool isInputBuffered();
 
 };
