@@ -1,39 +1,74 @@
-// AI generated with GPT-5.2-Codex (2026-05-08)
-
 #pragma once
 
-#include <cstdio>
-#include <unistd.h>
-#include <termios.h>
+#include "input/raw_inputs.hpp"
 
-#if defined(__APPLE__)
-#include <CoreFoundation/CoreFoundation.h>
-#elif defined(__linux__)
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#endif
+enum KeyCode {
+    A = 0,
+    S,
+    D,
+    F,
+    H,
+    G,
+    Z,
+    X,
+    C,
+    V,
+    B = 11,
+    Q,
+    W,
+    E,
+    R,
+    Y,
+    T,
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+    SIX,
+    FIVE,
+    EQUALS,
+    NINE,
+    SEVEN,
+    HYPEN,
+    EIGHT,
+    ZERO,
+    RIGHT_BRACKET,
+    O,
+    U,
+    LEFT_BRACKET,
+    I,
+    P,
+    RETURN,
+    L = 37,
+    J,
+    APOSTROPHE,
+    K,
+    COLON,
+    BACK_SLASH,
+    COMMA,
+    FORWARD_SLASH,
+    N,
+    M,
+    PERIOD,
+    TAB,
+    SPACE,
+    BACKTICK,
+    DELETE,
+    ENTER,
+    ESCAPE,
+};
 
 class Input {
 public:
     Input();
-    ~Input();
 
-    void updateKeyEvents();
+    void update();
 
-#if defined(__APPLE__)
-    void enableEventTap();
-#endif
+    bool isKeyPressed(KeyCode key);
+
 
 private:
-    int fd;
-    termios old;
-    termios raw;
+    RawInputs raw_inputs{};
+    int keyCodeStates[255] = {0};
 
-#if defined(__APPLE__)
-    CFMachPortRef event_tap;
-    CFRunLoopSourceRef run_loop_source;
-#elif defined(__linux__)
-    Display *display;
-    int xi_opcode;
-#endif
 };

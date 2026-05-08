@@ -12,7 +12,12 @@ class InputTester: public GameLoop {
   }
 
   void update(double_t dt) override {
-      input.updateKeyEvents();
+      input.update();
+      std::cout << "W pressed? " << input.isKeyPressed(KeyCode::W) << std::endl;
+      std::cout << "A pressed? " << input.isKeyPressed(KeyCode::A) << std::endl;
+      std::cout << "S pressed? " << input.isKeyPressed(KeyCode::S) << std::endl;
+      std::cout << "D pressed? " << input.isKeyPressed(KeyCode::D) << std::endl;
+      std::cout << "\033[4F\r";
       (void)dt;
   }
 
