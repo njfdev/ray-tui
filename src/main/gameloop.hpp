@@ -21,6 +21,8 @@ protected:
     Framebuffer fb{};
     Input input{};
 
+    double FRAMERATE = 30.0;
+
     int width() { return screen_width; }
     int height() { return screen_height; }
 

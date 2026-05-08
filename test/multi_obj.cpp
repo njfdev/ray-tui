@@ -9,6 +9,9 @@
 #include <iostream>
 #include <vector>
 
+const double MOVEMENT_SPEED = 0.05;
+const double ROTATION_SPEED = 1000.0;
+
 class PlaneCastTest : public GameLoop {
   Scene scene;
   Ray camera{Vec3{1.0, 0.0, 0.0}.normalize(), Vec3{-5.0, 0.0, 1.0}};
@@ -22,7 +25,7 @@ class PlaneCastTest : public GameLoop {
     plane.normal = Vec3{0, 0, 1};
 
     sphere.origin = Vec3{0.0, 0.0, 0.0};
-    sphere.radius = 0.4;
+    sphere.radius = 2.0;
 
     Material mat1{Color{0.5, 0.5, 0.7}, 0.0, 1.0, 1.0, 0.0, 1.0};
     Material mat2{Color{0.7, 0.7, 0.7}, 0.0, 1.0, 1.0, 0.0, 1.0};
@@ -55,22 +58,22 @@ class PlaneCastTest : public GameLoop {
     double w = 0.0;
 
     if (input.isKeyPressed(KeyCode::W)) {
-        vx += 1000.0*dt;
+        vx += MOVEMENT_SPEED/dt;
     }
     if (input.isKeyPressed(KeyCode::S)) {
-        vx -= 1000.0*dt;
+        vx -= MOVEMENT_SPEED/dt;
     }
     if (input.isKeyPressed(KeyCode::A)) {
-        vy += 1000.0*dt;
+        vy += MOVEMENT_SPEED/dt;
     }
     if (input.isKeyPressed(KeyCode::D)) {
-        vy -= 1000.0*dt;
+        vy -= MOVEMENT_SPEED/dt;
     }
     if (input.isKeyPressed(KeyCode::Q)) {
-        w += 1000.0*dt;
+        w -= ROTATION_SPEED/dt;
     }
     if (input.isKeyPressed(KeyCode::E)) {
-        w -= 1000.0*dt;
+        w += ROTATION_SPEED/dt;
     }
 
     x += (cos(angle)*vx - sin(angle)*vy) * SPEED * dt;
