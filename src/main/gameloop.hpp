@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cmath>
 #include <utility>
+#include "input/input.hpp"
 #include "render/framebuffer.hpp"
 
 using timestamp = std::chrono::time_point<std::chrono::steady_clock>;
@@ -14,12 +15,11 @@ public:
 
     void run();
 
-    char cur_key = 0;
-    std::array<std::pair<char, timestamp>, 5> keys_down;
     bool disable_render = false;
 
 protected:
     Framebuffer fb{};
+    Input input{};
 
     int width() { return screen_width; }
     int height() { return screen_height; }

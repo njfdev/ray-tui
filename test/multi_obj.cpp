@@ -6,6 +6,7 @@
 #include "scene/light.hpp"
 #include "scene/scene.hpp"
 #include <cmath>
+#include <iostream>
 #include <vector>
 
 class PlaneCastTest : public GameLoop {
@@ -53,25 +54,23 @@ class PlaneCastTest : public GameLoop {
     double vy = 0.0;
     double w = 0.0;
 
-    switch (cur_key) {
-    case 'w':
-      vx += 1.0;
-      break;
-    case 's':
-      vx -= 1.0;
-      break;
-    case 'a':
-      vy += 1.0;
-      break;
-    case 'd':
-      vy -= 1.0;
-      break;
-    case 'q':
-      w += 1.0;
-      break;
-    case 'e':
-      w -= 1.0;
-      break;
+    if (input.isKeyPressed(KeyCode::W)) {
+        vx += 1000.0*dt;
+    }
+    if (input.isKeyPressed(KeyCode::S)) {
+        vx -= 1000.0*dt;
+    }
+    if (input.isKeyPressed(KeyCode::A)) {
+        vy += 1000.0*dt;
+    }
+    if (input.isKeyPressed(KeyCode::D)) {
+        vy -= 1000.0*dt;
+    }
+    if (input.isKeyPressed(KeyCode::Q)) {
+        w += 1000.0*dt;
+    }
+    if (input.isKeyPressed(KeyCode::E)) {
+        w -= 1000.0*dt;
     }
 
     x += (cos(angle)*vx - sin(angle)*vy) * SPEED * dt;

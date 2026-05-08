@@ -1,7 +1,5 @@
 #include "input/input.hpp"
 #include "input/raw_inputs.hpp"
-#include <iostream>
-#include <ostream>
 
 Input::Input() {}
 

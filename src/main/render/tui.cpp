@@ -13,8 +13,6 @@ void Tui::init() {
 
   stringBuf = std::string();
 
-  initTermios();
-
   // disables sync between C and C++ stdio apis, increases speed but just make
   // sure to only use one.
   // std::ios::sync_with_stdio(false);
@@ -117,31 +115,4 @@ void Tui::endSync(bool tmux) {
     fputs("\033[?2026l", stdout);
   }
   fflush(stdout);
-}
-
-// originally from
-// https://stackoverflow.com/questions/6698161/getting-raw-input-from-console-using-c-or-c
-// changed stuff to get it working, honestly don't really know how this works
-// these apis are a little silly
-void Tui::initTermios() {
-  tcgetattr(STDIN_FILENO, &old);
-  termios raw = old;
-  raw.c_lflag &= ~(ICANON | ECHO);
-  raw.c_cc[VMIN] = 0;
-  raw.c_cc[VTIME] = 0;
-  tcsetattr(STDIN_FILENO, TCSANOW, &raw);
-}
-
-void Tui::resetTermios() { tcsetattr(STDIN_FILENO, TCSANOW, &old); }
-
-void Tui::pollInput(std::function<int(int key)> handler, int timeout_ms) {
-    pollfd pfd{ STDIN_FILENO, POLLIN, 0 };
-    if (poll(&pfd, 1, timeout_ms) <= 0)
-        return;
-
-    // Read all available inputs
-    unsigned char buf[64];
-    ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
-    for (ssize_t i = 0; i < n; i++)
-        handler(buf[i]);
 }
