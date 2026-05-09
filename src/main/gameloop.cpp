@@ -42,7 +42,7 @@ void GameLoop::run() {
     update(last_dt);
 
     if (!disable_render)
-      tui.render(fb);
+      tui.render(fb, screen_width, screen_height);
 
     // wait if there is time till next frame
     double frame_time = 1/FRAMERATE;

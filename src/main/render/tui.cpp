@@ -18,9 +18,8 @@ void Tui::init() {
   // std::ios::sync_with_stdio(false);
 }
 
-void Tui::render(Framebuffer &fb) {
-  int width, height;
-  getTerminalDimensions(&width, &height);
+void Tui::render(Framebuffer &fb, int width, int height) {
+    height /= 2;
 
   stringBuf.clear();
 
