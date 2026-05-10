@@ -2,7 +2,7 @@
 
 #include "input/raw_inputs.hpp"
 
-enum KeyCode {
+enum Key {
     A = 0,
     S,
     D,
@@ -65,7 +65,7 @@ public:
 
     void update();
 
-    bool isKeyPressed(KeyCode key);
+    bool isKeyPressed(Key key);
 
 
 private:

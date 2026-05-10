@@ -57,22 +57,22 @@ class PlaneCastTest : public GameLoop {
     double vy = 0.0;
     double w = 0.0;
 
-    if (input.isKeyPressed(KeyCode::W)) {
+    if (input.isKeyPressed(Key::W)) {
         vx += MOVEMENT_SPEED/dt;
     }
-    if (input.isKeyPressed(KeyCode::S)) {
+    if (input.isKeyPressed(Key::S)) {
         vx -= MOVEMENT_SPEED/dt;
     }
-    if (input.isKeyPressed(KeyCode::A)) {
+    if (input.isKeyPressed(Key::A)) {
         vy += MOVEMENT_SPEED/dt;
     }
-    if (input.isKeyPressed(KeyCode::D)) {
+    if (input.isKeyPressed(Key::D)) {
         vy -= MOVEMENT_SPEED/dt;
     }
-    if (input.isKeyPressed(KeyCode::Q)) {
+    if (input.isKeyPressed(Key::Q)) {
         w -= ROTATION_SPEED/dt;
     }
-    if (input.isKeyPressed(KeyCode::E)) {
+    if (input.isKeyPressed(Key::E)) {
         w += ROTATION_SPEED/dt;
     }
 

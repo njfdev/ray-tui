@@ -1,7 +1,7 @@
 #include "input/input.hpp"
 #include "input/raw_inputs.hpp"
 #include <iostream>
-#include <sys/_types/_fd_def.h>
+#include <poll.h>
 
 Input::Input() {
     // enable focus reporting
@@ -24,29 +24,32 @@ void Input::update() {
     }
 }
 
-bool Input::isKeyPressed(KeyCode key) {
+bool Input::isKeyPressed(Key key) {
     return isTerminalFocused && keyCodeStates[(int)key];
 }
 
 void Input::updateFocusedStatus() {
-    char c;
+    if (raw_inputs.isUsingStdinKeys()) {
+        isTerminalFocused = raw_inputs.isFocused();
+        return;
+    }
 
+    char c;
     int indexToAnsiSequence = 0;
-    while (read(STDIN_FILENO, &c, 1) > 0) {
+    struct pollfd pfd = { STDIN_FILENO, POLLIN, 0 };
+    while (poll(&pfd, 1, 0) > 0 && (pfd.revents & POLLIN) && read(STDIN_FILENO, &c, 1) > 0) {
+        pfd.revents = 0;
         if (indexToAnsiSequence == 0 && c == '\033') {
             indexToAnsiSequence += 1;
         } else if (indexToAnsiSequence == 1 && c == '[') {
             indexToAnsiSequence += 1;
         } else if (indexToAnsiSequence == 2) {
-
             if (c == 'I') {
                 isTerminalFocused = true;
             } else if (c == 'O') {
                 isTerminalFocused = false;
             }
-
             indexToAnsiSequence = 0;
-
         }
     }
 }
