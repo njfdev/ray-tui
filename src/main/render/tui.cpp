@@ -1,6 +1,5 @@
 #include "render/tui.hpp"
 #include <cstdio>
-#include <functional>
 #include <iostream>
 #include <string>
 #include <sys/ioctl.h>

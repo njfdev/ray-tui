@@ -1,15 +1,11 @@
 // AI generated with GPT-5.2-Codex (2026-05-08)
 
 #include "input/raw_inputs.hpp"
-#include "tui.hpp"
-#include <chrono>
 #include <fcntl.h>
 #include <glob.h>
 #include <poll.h>
 #include <termios.h>
-#include <thread>
 #include <unistd.h>
-#include <iostream>
 #include <cstring>
 #if defined(__linux__)
 #include <linux/input.h>

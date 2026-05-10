@@ -6,7 +6,6 @@
 #include "scene/light.hpp"
 #include "scene/scene.hpp"
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 const double MOVEMENT_SPEED = 0.05;

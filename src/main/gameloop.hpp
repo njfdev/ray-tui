@@ -1,9 +1,7 @@
 #pragma once
 
-#include <array>
 #include <chrono>
 #include <cmath>
-#include <utility>
 #include "input/input.hpp"
 #include "render/framebuffer.hpp"
 

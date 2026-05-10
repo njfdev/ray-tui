@@ -1,12 +1,9 @@
 #include "gameloop.hpp"
 #include "render/tui.hpp"
-#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <csignal>
-#include <iostream>
 #include <thread>
-#include <utility>
 
 std::atomic<bool> isInterrupted = false;
 void signalHandler(int sig) { isInterrupted = true; }
