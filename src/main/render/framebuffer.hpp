@@ -18,6 +18,10 @@ public:
   }
 
   Pixel color(int x, int y, int width, int height) {
-    return framebuffer.at(y * width + x);
+      int index = y*width+x;
+      if (index >= framebuffer.size()) {
+          return Pixel{0, 0, 0};
+      }
+      return framebuffer.at(index);
   }
 };
