@@ -1,8 +1,10 @@
 // AI generated with GPT-5.2-Codex (2026-05-08)
 
 #include "input/raw_inputs.hpp"
+#include <cstdint>
 #include <fcntl.h>
 #include <glob.h>
+#include <iostream>
 #include <poll.h>
 #include <termios.h>
 #include <unistd.h>
