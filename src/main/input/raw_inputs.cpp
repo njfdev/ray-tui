@@ -146,10 +146,12 @@ RawInputs::RawInputs() {
 }
 
 RawInputs::~RawInputs() {
+#if defined(__linux__)
     if (use_stdin_keys && evdev_fds.empty())
         std::cout << "\033[<u" << std::flush; // pop Kitty protocol stack
     for (int efd : evdev_fds) close(efd);
     tcsetattr(STDIN_FILENO, TCSANOW, &old);
+#endif
 
 #if defined(__APPLE__)
     if (run_loop_source) {
