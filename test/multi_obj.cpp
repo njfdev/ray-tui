@@ -6,7 +6,11 @@
 #include "scene/light.hpp"
 #include "scene/scene.hpp"
 #include <cmath>
+#include <iostream>
 #include <vector>
+
+const double MOVEMENT_SPEED = 0.05;
+const double ROTATION_SPEED = 1000.0;
 
 class PlaneCastTest : public GameLoop {
   Scene scene;
@@ -21,7 +25,7 @@ class PlaneCastTest : public GameLoop {
     plane.normal = Vec3{0, 0, 1};
 
     sphere.origin = Vec3{0.0, 0.0, 0.0};
-    sphere.radius = 0.4;
+    sphere.radius = 2.0;
 
     Material mat1{Color{0.5, 0.5, 0.7}, 0.0, 1.0, 1.0, 0.0, 1.0};
     Material mat2{Color{0.7, 0.7, 0.7}, 0.0, 1.0, 1.0, 0.0, 1.0};
@@ -53,25 +57,23 @@ class PlaneCastTest : public GameLoop {
     double vy = 0.0;
     double w = 0.0;
 
-    switch (cur_key) {
-    case 'w':
-      vx += 1.0;
-      break;
-    case 's':
-      vx -= 1.0;
-      break;
-    case 'a':
-      vy += 1.0;
-      break;
-    case 'd':
-      vy -= 1.0;
-      break;
-    case 'q':
-      w += 1.0;
-      break;
-    case 'e':
-      w -= 1.0;
-      break;
+    if (input.isKeyPressed(Key::W)) {
+        vx += MOVEMENT_SPEED/dt;
+    }
+    if (input.isKeyPressed(Key::S)) {
+        vx -= MOVEMENT_SPEED/dt;
+    }
+    if (input.isKeyPressed(Key::A)) {
+        vy += MOVEMENT_SPEED/dt;
+    }
+    if (input.isKeyPressed(Key::D)) {
+        vy -= MOVEMENT_SPEED/dt;
+    }
+    if (input.isKeyPressed(Key::Q)) {
+        w -= ROTATION_SPEED/dt;
+    }
+    if (input.isKeyPressed(Key::E)) {
+        w += ROTATION_SPEED/dt;
     }
 
     x += (cos(angle)*vx - sin(angle)*vy) * SPEED * dt;
