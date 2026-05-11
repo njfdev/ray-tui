@@ -12,7 +12,7 @@ const double MOVEMENT_SPEED = 10.0;
 const double ROTATION_SPEED = 5.0;
 
 class PlaneCastTest : public GameLoop {
-    Scene scene;
+    Scene scene = {};
     Ray camera{Vec3{0.0, 1.0, 0.0}.normalize(), Vec3{0.0, 0.0, 0.0}};
 
     double t = 0.0;
@@ -60,6 +60,8 @@ class PlaneCastTest : public GameLoop {
         scene.add_object(yellowSphere, yellow);
         scene.add_object(purpleSphere, purple);
         scene.add_object(greenSphere, green);
+
+        scene.bvh.construct();
 
         scene.lights.push_back(PointLight{Vec3{-2, 0, 7}, Color{1.0, 1.0, 1.0}});
         scene.lights.push_back(PointLight{Vec3{8.0, 0, 1}, Color{1.0, 0.0, 0.0}});
@@ -112,7 +114,7 @@ class PlaneCastTest : public GameLoop {
     z += vz * MOVEMENT_SPEED * dt;
     angle += w * ROTATION_SPEED * dt;
 
-    camera.direction = Vec3{cos(angle), sin(angle), 0.0};
+    camera.direction = Vec3{static_cast<float>(cos(angle)), static_cast<float>(sin(angle)), 0.0};
     camera.origin.x = x;
     camera.origin.y = y;
     camera.origin.z = z;

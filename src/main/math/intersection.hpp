@@ -3,15 +3,21 @@
 #include "math/ray.hpp"
 #include "vec3.hpp"
 #include <cmath>
+#include <cstdlib>
 #include <variant>
 
 struct SceneObject;
+
+struct AABB {
+  Vec3 lo;
+  Vec3 hi;
+};
 
 struct Intersection {
   double dist = INFINITY;
   Vec3 p;
   Vec3 normal;
-  SceneObject* obj = nullptr;
+  SceneObject *obj = nullptr;
 
   inline bool valid() { return dist != INFINITY; }
 };
@@ -24,6 +30,7 @@ struct Sphere {
 struct Plane {
   Vec3 origin;
   Vec3 normal;
+  double extent = 10;
 };
 
 inline Intersection intersect(const Ray &ray, const Sphere &sphere) {
@@ -71,11 +78,6 @@ inline Intersection intersect(const Ray &ray, const Sphere &sphere) {
   return Intersection{t0, p, normal};
 }
 
-struct Disabled {};
-inline Intersection intersect(const Ray &ray, const Disabled &disabled) {
-  return {};
-}
-
 // inspired by
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection.html
 // ray collides with face that has normal going out of it
@@ -98,9 +100,37 @@ inline Intersection intersect(const Ray &ray, const Plane &plane) {
   return Intersection{t, p, plane.normal};
 }
 
-using Shape = std::variant<Sphere, Plane, Disabled>;
+inline AABB bounds(const Sphere &sphere) {
+  return AABB{
+      sphere.origin - Vec3{1.0, 1.0, 1.0} * sphere.radius,
+      sphere.origin + Vec3{1.0, 1.0, 1.0} * sphere.radius,
+  };
+}
+
+inline AABB bounds(const Plane &plane) {
+  Vec3 z = Vec3{0.0, 0.0, 1.0};
+  if (plane.normal == z) {
+    z = Vec3{1.0, 0.0, 0.0};
+  }
+
+  Vec3 axis1 = (plane.normal ^ z).normalize();
+  Vec3 axis2 = plane.normal ^ axis1;
+
+  Vec3 c1 = axis1 * plane.extent + axis2 * plane.extent;
+
+  Vec3 offset = Vec3{std::abs(c1.x) , std::abs(c1.y), std::abs(c1.z)};
+
+  return AABB{plane.origin - offset, plane.origin + offset};
+}
+
+using Shape = std::variant<Sphere, Plane>;
 
 inline Intersection intersect(const Ray &r, const Shape &shape) {
   // leaving normal unnormalized, normalizin
   return std::visit([&](const auto &s) { return intersect(r, s); }, shape);
+}
+
+inline AABB bounds(const Shape &shape) {
+  // leaving normal unnormalized, normalizin
+  return std::visit([&](const auto &s) { return bounds(s); }, shape);
 }

@@ -3,17 +3,13 @@
 #include "material.hpp"
 #include "math/ray.hpp"
 #include "math/intersection.hpp"
+#include "render/bvh.hpp"
 #include "render/color.hpp"
 #include "render/framebuffer.hpp"
 #include "scene/light.hpp"
 #include <functional>
 #include <queue>
 #include <vector>
-
-struct SceneObject {
-  Material m;
-  Shape* shape;
-};
 
 struct BounceConfig {
   int reflect;
@@ -33,10 +29,8 @@ public:
   SceneObject* add_object(Shape shape, Material mat);
   void remove_object(SceneObject*);
 
+  BVH bvh = BVH();
 private:
-  std::vector<Shape> shapes;
-  std::vector<SceneObject> object_data;
-  std::priority_queue<int, std::vector<int>, std::greater<int>> empty_slots;
   Intersection trace(Ray &ray, double min_dist);
   double traceLight(Vec3 p, Vec3 normal, PointLight light);
 };

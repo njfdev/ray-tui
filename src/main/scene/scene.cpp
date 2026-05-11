@@ -9,51 +9,48 @@
 #include <iterator>
 
 Intersection Scene::trace(Ray &ray, double min_dist) {
-  double best_dist = INFINITY;
-
-  // default initialize as invalid
-  Intersection best_hit{};
-
-  int i = 0;
-  for (auto shape : shapes) {
-    auto hit = intersect(ray, shape);
-    if (hit.dist < best_dist && hit.dist > min_dist) {
-      best_hit = hit;
-      best_dist = hit.dist;
-      best_hit.obj = &object_data[i];
-    }
-    i++;
-  }
-
-  return best_hit;
+  return bvh.intersect(ray);
+  // double best_dist = INFINITY;
+  //
+  // // default initialize as invalid
+  // Intersection best_hit{};
+  //
+  // int i = 0;
+  // for (auto shape : shapes) {
+  //   auto hit = intersect(ray, shape);
+  //   if (hit.dist < best_dist && hit.dist > min_dist) {
+  //     best_hit = hit;
+  //     best_dist = hit.dist;
+  //     best_hit.obj = &object_data[i];
+  //   }
+  //   i++;
+  // }
+  //
+  // return best_hit;
 }
 
 SceneObject* Scene::add_object(Shape shape, Material mat) {
-  if(!empty_slots.empty()) {
-    int i = empty_slots.top();
-    empty_slots.pop();
-    shapes[i] = shape;
-
-    object_data[i] = SceneObject {
-      mat, &shapes[i]
-    };
-
-    return &object_data.at(i);
-  };
-
-  shapes.push_back(shape);
-
-  object_data.push_back(SceneObject {
-    mat, &shapes.back()
-  });
-
-  return &object_data.back();
-}
-
-void Scene::remove_object(SceneObject* obj) {
-  int i = std::distance(object_data.data(), obj);
-  this->empty_slots.push(i);
-  shapes[i] = Disabled {};
+  auto res = SceneObject { mat, nullptr };
+  return bvh.insert(shape, bounds(shape), res);
+  // if(!empty_slots.empty()) {
+  //   int i = empty_slots.top();
+  //   empty_slots.pop();
+  //   shapes[i] = shape;
+  //
+  //   object_data[i] = SceneObject {
+  //     mat, &shapes[i]
+  //   };
+  //
+  //   return &object_data.at(i);
+  // };
+  //
+  // shapes.push_back(shape);
+  //
+  // object_data.push_back(SceneObject {
+  //   mat, &shapes.back()
+  // });
+  //
+  // return &object_data.back();
 }
 
 void Scene::render(Framebuffer *fb, Ray fwd) {
@@ -120,12 +117,12 @@ double Scene::traceLight(Vec3 p, Vec3 normal, PointLight light) {
   Vec3 light_offset = light.p - p;
   double light_len = light_offset.sqrLength();
   Vec3 light_dir = light_offset.normalize();
-  Ray light_ray = Ray{light_dir, p};
+  Ray light_ray = Ray{light_dir, p + light_dir*0.01};
   Intersection light_hit = trace(light_ray, 0.01);
 
   // when ray dosent hit anything dist is +INFINITY, valid for lights.
   if (light_hit.dist * light_hit.dist >= light_len) {
-    double weight = std::max(0.15, light_dir * normal);
+    double weight = std::max(0.15f, light_dir * normal);
 
     return weight;
   }
