@@ -1,177 +1,148 @@
 #include "bvh4.hpp"
-#include "math/vec3.hpp"
-#include <cmath>
 #include <cstdint>
-#include <smmintrin.h>
-#include <utility>
+#include <immintrin.h>
+#include <optional>
 #include <xmmintrin.h>
 
-#ifdef SSE
-#include <immintrin.h>
-#endif // SSE
-
-void BVHNode::intersect(Ray ray, Vec3 parent_lo, Vec3 parent_hi) {
-  float scale_x = (parent_hi.x - parent_lo.x) / 255.f;
-  float scale_y = (parent_hi.y - parent_lo.y) / 255.f;
-  float scale_z = (parent_hi.z - parent_lo.z) / 255.f;
-
-#ifdef SSE
-  // with a lot of help from
-  // https://db.in.tum.de/~finis/x86-intrin-cheatsheet-v2.1.pdf or random
-  // searches
-
-  // dequantize bytes to floats:
-  // - load copies of the 4 bytes into the 4 slots (loading as i32)
-  // - _mm_cvtepu8_epi32 unpacks bytes to i32s with leading 0s
-  // - i32 -> float
-  __m128 xlo = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.xlo)));
-  __m128 xhi = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.xhi)));
-
-  __m128 ylo = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.ylo)));
-  __m128 yhi = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.yhi)));
-
-  __m128 zlo = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.zlo)));
-  __m128 zhi = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.zhi)));
-
-  // transform to world space: world = parent_lo + local*parent_scale
-  __m128 plo_x = _mm_set1_ps(parent_lo.x);
-  __m128 plo_y = _mm_set1_ps(parent_lo.y);
-  __m128 plo_z = _mm_set1_ps(parent_lo.z);
-  __m128 sx = _mm_set1_ps(scale_x);
-  __m128 sy = _mm_set1_ps(scale_y);
-  __m128 sz = _mm_set1_ps(scale_z);
-
-  xlo = _mm_fmadd_ps(xlo, sx, plo_x);
-  xhi = _mm_fmadd_ps(xhi, sx, plo_x);
-
-  ylo = _mm_fmadd_ps(ylo, sy, plo_y);
-  yhi = _mm_fmadd_ps(yhi, sy, plo_y);
-
-  zlo = _mm_fmadd_ps(zlo, sz, plo_z);
-  zhi = _mm_fmadd_ps(zhi, sz, plo_z);
-
-  // slab method intersection test (https://en.wikipedia.org/wiki/Slab_method)
-
-#endif // SSE
-}
-
-#ifdef SSE
+#ifdef AVX
 
 // with a lot of help from
 // https://db.in.tum.de/~finis/x86-intrin-cheatsheet-v2.1.pdf or random
 // searches
-void BVHNode::intersect_sse(__m128 rix, __m128 riy, __m128 riz, __m128 roix,
-                            __m128 roiy, __m128 roiz, float sxf, float syf,
-                            float szf, float ploxf, float ployf, float plozf,
-                            float tminf, float tmaxf) {
+std::optional<uint32_t>
+BVHNode::intersect_avx(__m256 rix, __m256 riy, __m256 riz, __m256 roix,
+                       __m256 roiy, __m256 roiz, float sxf, float syf,
+                       float szf, float ploxf, float ployf, float plozf,
+                       float tminf, float tmaxf) {
+
+  if (internal.children[0] == 0) {
+    return std::optional(leaf.ptr);
+  }
 
   // dequantize bytes to floats:
-  // - load copies of the 4 bytes into the 4 slots (loading as i32)
-  // - _mm_cvtepu8_epi32 unpacks bytes to i32s with leading 0s
+  // - load copies of the 8 bytes into the 8 slots (loading as i64)
+  // - _mm256_cvtepu8_epi32 unpacks bytes to i32s with leading 0s
   // - i32 -> float
-  __m128 xlo = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.xlo)));
-  __m128 xhi = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.xhi)));
+  __m256 x = _mm256_cvtepi32_ps(
+      _mm256_cvtepu8_epi32(_mm_cvtsi64_si128(internal.xlohi)));
 
-  __m128 ylo = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.ylo)));
-  __m128 yhi = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.yhi)));
+  __m256 y = _mm256_cvtepi32_ps(
+      _mm256_cvtepu8_epi32(_mm_cvtsi64_si128(internal.ylohi)));
 
-  __m128 zlo = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.zlo)));
-  __m128 zhi = _mm_cvtepi32_ps(
-      _mm_cvtepu8_epi32(_mm_cvtsi32_si128(*(int *)internal.zhi)));
+  __m256 z = _mm256_cvtepi32_ps(
+      _mm256_cvtepu8_epi32(_mm_cvtsi64_si128(internal.zlohi)));
 
   // transform to world space: world = parent_lo + local*parent_scale
-  __m128 plox = _mm_set1_ps(ploxf);
-  __m128 ploy = _mm_set1_ps(ployf);
-  __m128 ploz = _mm_set1_ps(plozf);
-  __m128 sx = _mm_set1_ps(sxf);
-  __m128 sy = _mm_set1_ps(syf);
-  __m128 sz = _mm_set1_ps(szf);
+  {
 
-  xlo = _mm_fmadd_ps(xlo, sx, plox);
-  xhi = _mm_fmadd_ps(xhi, sx, plox);
+    __m256 plox = _mm256_set1_ps(ploxf);
+    __m256 sx = _mm256_set1_ps(sxf);
+    x = _mm256_fmadd_ps(x, sx, plox);
+  }
+  {
 
-  ylo = _mm_fmadd_ps(ylo, sy, ploy);
-  yhi = _mm_fmadd_ps(yhi, sy, ploy);
-
-  zlo = _mm_fmadd_ps(zlo, sz, ploz);
-  zhi = _mm_fmadd_ps(zhi, sz, ploz);
+    __m256 ploy = _mm256_set1_ps(ployf);
+    __m256 sy = _mm256_set1_ps(syf);
+    y = _mm256_fmadd_ps(y, sy, ploy);
+  }
+  {
+    __m256 ploz = _mm256_set1_ps(plozf);
+    __m256 sz = _mm256_set1_ps(szf);
+    z = _mm256_fmadd_ps(z, sz, ploz);
+  }
 
   // https://en.wikipedia.org/wiki/Slab_method
-  __m128 tlox = _mm_fmsub_ps(xlo, rix, roix);
-  __m128 thix = _mm_fmsub_ps(xhi, rix, roix);
+  __m256 tx = _mm256_fmsub_ps(x, rix, roix);
+  __m256i txi = _mm256_castps_si256(tx);
+  // swap lower/upper 128-bit halves (swap lo hi)
+  __m256 txs = _mm256_castsi256_ps(_mm256_permute2x128_si256(txi, txi, 0x01));
 
-  __m128 tc = _mm_min_ps(tlox, thix);
-  __m128 tf = _mm_max_ps(tlox, thix);
+  __m128 tc = _mm256_castps256_ps128(_mm256_min_ps(tx, txs));
+  __m128 tf = _mm256_castps256_ps128(_mm256_max_ps(tx, txs));
 
-  __m128 tloy = _mm_fmsub_ps(ylo, riy, roiy);
-  __m128 thiy = _mm_fmsub_ps(yhi, riy, roiy);
+  {
+    __m256 ty = _mm256_fmsub_ps(y, riy, roiy);
+    __m256i tyi = _mm256_castps_si256(ty);
+    __m256 tys = _mm256_castsi256_ps(_mm256_permute2x128_si256(tyi, tyi, 0x01));
 
-  __m128 tcy = _mm_min_ps(tloy, thiy);
-  __m128 tfy = _mm_max_ps(tloy, thiy);
+    __m128 tcy = _mm256_castps256_ps128(_mm256_min_ps(ty, tys));
+    __m128 tfy = _mm256_castps256_ps128(_mm256_max_ps(ty, tys));
+    tc = _mm_max_ps(tc, tcy);
+    tf = _mm_min_ps(tf, tfy);
+  }
+  {
 
-  tc = _mm_max_ps(tc, tcy);
-  tf = _mm_min_ps(tf, tfy);
+    __m256 tz = _mm256_fmsub_ps(z, riz, roiz);
+    __m256i tzi = _mm256_castps_si256(tz);
+    __m256 tzs = _mm256_castsi256_ps(_mm256_permute2x128_si256(tzi, tzi, 0x01));
 
-  __m128 tloz = _mm_fmsub_ps(zlo, riz, roiz);
-  __m128 thiz = _mm_fmsub_ps(zhi, riz, roiz);
-
-  __m128 tcz = _mm_min_ps(tloz, thiz);
-  __m128 tfz = _mm_max_ps(tloz, thiz);
-
-  tc = _mm_max_ps(tc, tcz);
-  tf = _mm_min_ps(tf, tfz);
+    __m128 tcz = _mm256_castps256_ps128(_mm256_min_ps(tz, tzs));
+    __m128 tfz = _mm256_castps256_ps128(_mm256_max_ps(tz, tzs));
+    tc = _mm_max_ps(tc, tcz);
+    tf = _mm_min_ps(tf, tfz);
+  }
 
   __m128 tmin = _mm_set1_ps(tminf);
   __m128 tmax = _mm_set1_ps(tmaxf);
 
+  // clamping t
   tc = _mm_max_ps(tc, tmin);
   tf = _mm_min_ps(tf, tmax);
 
   __m128 hit_mask = _mm_cmple_ps(tc, tf);
-  tc = _mm_and_ps(tc, hit_mask);
 
-  int m = _mm_movemask_ps(hit_mask);
+  __m128 inf = _mm_set1_ps(std::numeric_limits<float>::infinity());
+  __m128 ts = _mm_blendv_ps(inf, tc, hit_mask); // ray hit distances
 
-  if (m == 0)
-    return; // no collision
-  float ts[4];
-  _mm_store_ps(ts, tc);
+  float tsf[4];
 
-  // merge sort lol
-  bool s01 = ts[0] > ts[1] && (m & 0b10);
-  bool s23 = ts[2] > ts[3] && (m & 0b1000);
+  _mm_store_ps(tsf, ts);
 
-  if (s01) {
-    std::swap(ts[0], ts[1]);
-    int s = 0b0101;
-    m ^= 0b11;
+  while (true) {
+    // find child with closest bounding box to test first
+    __m128 shuf = _mm_shuffle_ps(ts, ts, _MM_SHUFFLE(2, 3, 0, 1));
+    __m128 min1 = _mm_min_ps(ts, shuf);
+    shuf = _mm_shuffle_ps(min1, min1, _MM_SHUFFLE(1, 0, 3, 2));
+    __m128 min = _mm_min_ps(min1, shuf); // [min, min, min, min]
+    __m128 min_eq = _mm_cmpeq_ps(ts, min);
+
+    __m128 valid_min = _mm_and_ps(hit_mask, min_eq);
+    int min_bit = _mm_movemask_ps(valid_min);
+    if (min_bit == 0)
+      return {}; // no collision
+    int min_i = _tzcnt_u32(min_bit);
+
+    // test ray
+    float xlo =
+        static_cast<float>((internal.xlohi >> (min_i * 4)) & 255) * sxf + ploxf;
+    float xhi =
+        static_cast<float>((internal.xlohi >> (min_i * 4 + 32)) & 255) * sxf +
+        ploxf;
+    float sx = xhi - xlo;
+
+    float ylo =
+        static_cast<float>((internal.ylohi >> (min_i * 4)) & 255) * syf + ployf;
+    float yhi =
+        static_cast<float>((internal.ylohi >> (min_i * 4 + 32)) & 255) * syf +
+        ployf;
+    float sy = yhi - ylo;
+
+    float zlo =
+        static_cast<float>((internal.zlohi >> (min_i * 4)) & 255) * szf + plozf;
+    float zhi =
+        static_cast<float>((internal.zlohi >> (min_i * 4 + 32)) & 255) * szf +
+        plozf;
+    float sz = zhi - zlo;
+
+    auto res = this[internal.children[min_i]].intersect_avx(
+        rix, riy, riz, roix, roiy, roiz, sx, sy, sz, xlo, ylo, zlo, tminf,
+        tmaxf - tsf[min_i]);
+
+    if (res.has_value())
+      return res;
+
+    // try next by removing cur and re reducing min
+    _mm_blendv_ps(tc, inf, min_eq);
   }
-  if (s23) {
-    std::swap(ts[2], ts[3]);
-    m ^= 0b1100;
-  }
-
-  bool s02 = ts[0] > ts[2] && (m & 0b1000);
-
-  int i0 = s02 ? s23+2 : s01;
-
-  // merge
-  if () {
-    i0 = 
-    std::swap(ts[0], ts[2]);
-    m ^= 0b1100;
-  }
-
 }
-#endif // SSE
+#endif // AVX
