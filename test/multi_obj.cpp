@@ -79,7 +79,7 @@ class PlaneCastTest : public GameLoop {
     y += (sin(angle)*vx + cos(angle)*vy) * SPEED * dt;
     angle += w * ANG_SPEED * dt;
 
-    camera.direction = Vec3{cos(angle), sin(angle), 0.0};
+    camera.direction = Vec3{(float) cos(angle), (float) sin(angle), 0.0};
     camera.origin.x = x;
     camera.origin.y = y;
 

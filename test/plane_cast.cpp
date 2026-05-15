@@ -35,7 +35,7 @@ class PlaneCastTest : public GameLoop {
 
   void update(double_t dt) override {
     scene.render(&fb, camera);
-    camera.direction = Vec3{cos(t), sin(t), 0.0};
+    camera.direction = Vec3{(float) cos(t), (float) sin(t), 0.0};
     t += dt;
   }
 
