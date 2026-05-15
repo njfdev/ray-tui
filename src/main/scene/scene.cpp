@@ -1,57 +1,49 @@
 #include "scene/scene.hpp"
+#include "ecs/entity_manager.hpp"
 #include "math/intersection.hpp"
 #include "math/vec3.hpp"
+#include "render/bvh.hpp"
 #include "render/framebuffer.hpp"
-#include "scene/light.hpp"
+#include "scene/components/position.hpp"
+#include "scene/components/renderable.hpp"
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <iterator>
+#include <type_traits>
+#include <variant>
+
+Scene::Scene(EntityManager* entityManager) {
+  this->entityManager = entityManager;
+}
 
 Intersection Scene::trace(Ray &ray, double min_dist) {
   return bvh.intersect(ray);
-  // double best_dist = INFINITY;
-  //
-  // // default initialize as invalid
-  // Intersection best_hit{};
-  //
-  // int i = 0;
-  // for (auto shape : shapes) {
-  //   auto hit = intersect(ray, shape);
-  //   if (hit.dist < best_dist && hit.dist > min_dist) {
-  //     best_hit = hit;
-  //     best_dist = hit.dist;
-  //     best_hit.obj = &object_data[i];
-  //   }
-  //   i++;
-  // }
-  //
-  // return best_hit;
 }
 
-SceneObject* Scene::add_object(Shape shape, Material mat) {
-  auto res = SceneObject { mat, nullptr };
-  return bvh.insert(shape, bounds(shape), res);
-  // if(!empty_slots.empty()) {
-  //   int i = empty_slots.top();
-  //   empty_slots.pop();
-  //   shapes[i] = shape;
-  //
-  //   object_data[i] = SceneObject {
-  //     mat, &shapes[i]
-  //   };
-  //
-  //   return &object_data.at(i);
-  // };
-  //
-  // shapes.push_back(shape);
-  //
-  // object_data.push_back(SceneObject {
-  //   mat, &shapes.back()
-  // });
-  //
-  // return &object_data.back();
-}
+// SceneObject* Scene::add_object(Shape shape, Material mat) {
+//   auto res = SceneObject { mat, nullptr };
+//   return bvh.insert(shape, bounds(shape), res);
+//   // if(!empty_slots.empty()) {
+//   //   int i = empty_slots.top();
+//   //   empty_slots.pop();
+//   //   shapes[i] = shape;
+//   //
+//   //   object_data[i] = SceneObject {
+//   //     mat, &shapes[i]
+//   //   };
+//   //
+//   //   return &object_data.at(i);
+//   // };
+//   //
+//   // shapes.push_back(shape);
+//   //
+//   // object_data.push_back(SceneObject {
+//   //   mat, &shapes.back()
+//   // });
+//   //
+//   // return &object_data.back();
+// }
 
 void Scene::render(Framebuffer *fb, Ray fwd) {
   int w = fb->w;
@@ -86,11 +78,19 @@ void Scene::render(Framebuffer *fb, Ray fwd) {
       int lit = 0;
       auto hit = trace(ray, 1e-5);
       if (hit.valid()) {
-        for (auto light : lights) {
-          double phong = this->traceLight(hit.p, hit.normal, light);
+        for (int entityId : entityManager->getEntityIdsWithComponents({component_id<Position>(), component_id<Renderable>()})) {
+          Renderable* appearance = entityManager->getComponent<Renderable>(entityId);
+
+          if (!std::holds_alternative<PointLight>(appearance->geometry)) {
+            continue;
+          }
+
+          Position* origin = entityManager->getComponent<Position>(entityId);
+
+          double phong = this->traceLight(hit.p, hit.normal, origin->pos);
 
           if (phong != 0) {
-            color = color + phong * light.color * hit.obj->m.color;
+            color = color + phong * appearance->mat.color * hit.obj->appearance.mat.color;
             lit++;
           }
         }
@@ -113,8 +113,9 @@ void Scene::render(Framebuffer *fb, Ray fwd) {
   this->cur_frame++;
 }
 
-double Scene::traceLight(Vec3 p, Vec3 normal, PointLight light) {
-  Vec3 light_offset = light.p - p;
+double Scene::traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin) {
+
+  Vec3 light_offset = lightOrigin - p;
   double light_len = light_offset.sqrLength();
   Vec3 light_dir = light_offset.normalize();
   Ray light_ray = Ray{light_dir, p + light_dir*0.01};
@@ -127,4 +128,25 @@ double Scene::traceLight(Vec3 p, Vec3 normal, PointLight light) {
     return weight;
   }
   return 0.0;
+}
+
+
+void Scene::construct() {
+  for (int entityId : entityManager->getEntityIdsWithComponents({ component_id<Position>(), component_id<Renderable>() })) {
+    Position* origin = entityManager->getComponent<Position>(entityId);
+    Renderable* appearance = entityManager->getComponent<Renderable>(entityId);
+
+    if (std::holds_alternative<PointLight>(appearance->geometry)) {
+      continue;
+    }
+
+    bvh.insert(
+      bounds(origin->pos, appearance->geometry),
+      *origin,
+      *appearance
+    );
+
+  }
+
+  bvh.construct();
 }

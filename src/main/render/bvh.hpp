@@ -3,9 +3,10 @@
 #include "math/intersection.hpp"
 #include "math/ray.hpp"
 #include "math/vec3.hpp"
-#include "scene/object.hpp"
+#include "scene/components/position.hpp"
+#include "scene/components/renderable.hpp"
+#include "scene/geometry.hpp"
 #include <cstdint>
-#include <optional>
 #include <vector>
 
 #ifdef AVX
@@ -80,14 +81,14 @@ private:
   static_assert(alignof(BVH4Node) == 32);
 
   std::vector<BVH4Node> nodes = {};
-  std::vector<Shape> shapes = {};
-  std::vector<SceneObject> objs = {};
+  std::vector<Geometry> shapes = {};
+  std::vector<RenderData> objs = {};
   std::vector<AABB> bounds = {};
   AABB root_bounds = {};
   Ray cur_ray = Ray(Vec3{1.0, 0.0, 0.0});
 
 public:
-  SceneObject *insert(Shape shape, AABB bounds, SceneObject obj);
+  RenderData *insert(AABB bounds, Position origin, Renderable appearance);
   void remove(uint32_t obj);
 
   void construct();

@@ -12,7 +12,7 @@ Intersection BVH::BVH4Node::intersect_c(BVH *bvh, float rix, float riy,
                                         float szf, float ploxf, float ployf,
                                         float plozf, float tminf, float tmaxf) {
   if (internal.children[0] == 0) {
-    auto res = ::intersect(bvh->cur_ray, bvh->shapes[leaf.ptr]);
+    auto res = ::intersect(bvh->cur_ray, bvh->objs[leaf.ptr].origin.pos, bvh->objs[leaf.ptr].appearance.geometry);
     if (res.valid()) {
       res.obj = &bvh->objs[leaf.ptr];
       return res;
@@ -237,7 +237,7 @@ BVH::BVH4Node::intersect_avx(BVH* bvh, __m256 rix, __m256 riy, __m256 riz, __m25
                         float tminf, float tmaxf) {
 
   if (internal.children[0] == 0) {
-    auto res = ::intersect(bvh->cur_ray, bvh->shapes[leaf.ptr]);
+    auto res = ::intersect(bvh->cur_ray, bvh->objs[leaf.ptr].origin.pos, bvh->objs[leaf.ptr].appearance.geometry);
     if (res.valid()) {
       res.obj = &bvh->objs[leaf.ptr];
       return res;

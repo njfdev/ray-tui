@@ -6,10 +6,10 @@ public:
     System();
     ~System();
 
-    virtual std::list<int> requiredComponents();
+    virtual std::list<int> requiredComponents() { return {}; };
 
-    virtual void init();
-    virtual void update(std::list<int> entityIds);
-    virtual void cleanup();
+    virtual void init() {};
+    virtual void update(std::list<int> entityIds) {};
+    virtual void cleanup() {};
 
 };
