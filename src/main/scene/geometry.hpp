@@ -12,6 +12,6 @@ struct Plane {
   double extent = 10;
 };
 
-struct PointLight {};
+struct EmptyGeometry {};
 
-using Geometry = std::variant<Sphere, Plane, PointLight>;
+using Geometry = std::variant<Sphere, Plane, EmptyGeometry>;

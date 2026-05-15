@@ -4,9 +4,9 @@
 
 class Renderer : System {
 
-  std::list<int> requiredComponents() override;
+  std::vector<int> requiredComponents() override;
 
   void init() override;
-  void update(std::list<int> entityIds) override;
+  void update(std::vector<int> entityIds) override;
   void cleanup() override;
 };

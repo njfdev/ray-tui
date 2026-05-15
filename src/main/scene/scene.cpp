@@ -9,11 +9,12 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
 #include <iterator>
 #include <type_traits>
 #include <variant>
 
-Scene::Scene(EntityManager* entityManager) {
+Scene::Scene(EntityManager *entityManager) {
   this->entityManager = entityManager;
 }
 
@@ -78,19 +79,22 @@ void Scene::render(Framebuffer *fb, Ray fwd) {
       int lit = 0;
       auto hit = trace(ray, 1e-5);
       if (hit.valid()) {
-        for (int entityId : entityManager->getEntityIdsWithComponents({component_id<Position>(), component_id<Renderable>()})) {
-          Renderable* appearance = entityManager->getComponent<Renderable>(entityId);
+        for (int entityId : entityManager->getEntityIdsWithComponents(
+                 {component_id<Position>(), component_id<Renderable>()})) {
+          Renderable *appearance =
+              entityManager->getComponent<Renderable>(entityId);
 
-          if (!std::holds_alternative<PointLight>(appearance->geometry)) {
+          if (!std::holds_alternative<EmptyGeometry>(appearance->geometry)) {
             continue;
           }
 
-          Position* origin = entityManager->getComponent<Position>(entityId);
+          Position *origin = entityManager->getComponent<Position>(entityId);
 
           double phong = this->traceLight(hit.p, hit.normal, origin->pos);
 
           if (phong != 0) {
-            color = color + phong * appearance->mat.color * hit.obj->appearance.mat.color;
+            color = color + phong * appearance->mat.color *
+                                hit.obj->appearance.mat.color;
             lit++;
           }
         }
@@ -118,7 +122,7 @@ double Scene::traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin) {
   Vec3 light_offset = lightOrigin - p;
   double light_len = light_offset.sqrLength();
   Vec3 light_dir = light_offset.normalize();
-  Ray light_ray = Ray{light_dir, p + light_dir*0.01};
+  Ray light_ray = Ray{light_dir, p + light_dir * 0.01};
   Intersection light_hit = trace(light_ray, 0.01);
 
   // when ray dosent hit anything dist is +INFINITY, valid for lights.
@@ -130,23 +134,24 @@ double Scene::traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin) {
   return 0.0;
 }
 
-
 void Scene::construct() {
-  for (int entityId : entityManager->getEntityIdsWithComponents({ component_id<Position>(), component_id<Renderable>() })) {
-    Position* origin = entityManager->getComponent<Position>(entityId);
-    Renderable* appearance = entityManager->getComponent<Renderable>(entityId);
+  std::cout << "CONSTRUCT CALLED" << std::endl;
+  for (int entityId : entityManager->getEntityIdsWithComponents(
+           {component_id<Position>(), component_id<Renderable>()})) {
+    Position *origin = entityManager->getComponent<Position>(entityId);
+    Renderable *appearance = entityManager->getComponent<Renderable>(entityId);
 
-    if (std::holds_alternative<PointLight>(appearance->geometry)) {
+    std::cout << "GOT SHAPE" << std::endl;
+
+    if (std::holds_alternative<EmptyGeometry>(appearance->geometry)) {
       continue;
     }
 
-    bvh.insert(
-      bounds(origin->pos, appearance->geometry),
-      *origin,
-      *appearance
-    );
+    std::cout << "ADDING SHAPE" << std::endl;
 
+    bvh.insert(bounds(origin->pos, appearance->geometry), *origin, *appearance);
   }
 
+  std::cout << "FILTER END" << std::endl;
   bvh.construct();
 }

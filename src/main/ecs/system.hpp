@@ -1,15 +1,15 @@
 #pragma once
 
-#include <list>
+#include <vector>
 class System {
 public:
     System();
     ~System();
 
-    virtual std::list<int> requiredComponents() { return {}; };
+    virtual std::vector<int> requiredComponents() { return {}; };
 
     virtual void init() {};
-    virtual void update(std::list<int> entityIds) {};
+    virtual void update(std::vector<int> entityIds) {};
     virtual void cleanup() {};
 
 };

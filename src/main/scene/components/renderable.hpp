@@ -5,6 +5,7 @@
 #include "scene/material.hpp"
 
 struct Renderable : Component {
+    int id = component_id<Renderable>();
     Material mat;
     Geometry geometry;
 };

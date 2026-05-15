@@ -1,62 +1,64 @@
 #include "entity_manager.hpp"
 #include "component.hpp"
 #include "system.hpp"
-#include <array>
-#include <list>
 #include <map>
-#include <stdexcept>
-#include <tuple>
+#include <vector>
 
 EntityManager::EntityManager() {
-    entities = std::map<int, std::list<Component*>>();
+  entities = std::map<int, std::vector<Component *>>();
 }
 
 int EntityManager::createEntity() {
-    int id = nextEntityId++;
+  int id = nextEntityId++;
 
-    entities.insert({id, std::list<Component*>()});
+  entities.insert({id, std::vector<Component *>()});
 
-    return id;
+  return id;
 }
 
-int EntityManager::createEntity(std::list<Component*> comps) {
-    int id = createEntity();
+int EntityManager::createEntity(std::vector<Component *> comps) {
+  int id = createEntity();
 
-    entities[id] = comps;
+  entities[id] = comps;
 
-    return id;
+  return id;
 }
 
-void EntityManager::addComponent(int entityId, Component* comp) {
-    entities[entityId].push_back(comp);
+void EntityManager::addComponent(int entityId, Component *comp) {
+  entities[entityId].push_back(comp);
 }
 
-int EntityManager::addSystem(System* system) {
-    int id = nextSystemId++;
+int EntityManager::addSystem(System *system) {
+  int id = nextSystemId++;
 
-    systems.insert({id, system});
+  systems.insert({id, system});
 
-    return id;
+  return id;
 }
 
-std::list<int> EntityManager::getEntityIdsWithComponents(std::list<int> componentIds) {
-  std::list<int> applicableEntityIds{};
+std::vector<int>
+EntityManager::getEntityIdsWithComponents(std::vector<int> componentIds) {
+  std::vector<int> applicableEntityIds{};
 
   for (auto [entityId, entity] : entities) {
-      std::list<int> requiredCompIds = componentIds;
-      for (Component* comp : entity) {
-          for (auto it = requiredCompIds.begin(); it != requiredCompIds.end(); it++) {
-              if (component_id<typeof *comp>() == *it) {
-                  requiredCompIds.erase(it);
-                  break;
-              }
-          }
-
-          if (requiredCompIds.empty()) {
-              applicableEntityIds.push_back(entityId);
-              break;
-          }
+    bool found_all = true;
+    for (int req_comp_id : componentIds) {
+      bool found = false;
+      for (Component *comp : entity) {
+        if (comp->id == req_comp_id) {
+          found = true;
+          break;
+        }
       }
+
+      if (!found) {
+        found_all = false;
+        break;
+      }
+    }
+    if (found_all) {
+      applicableEntityIds.push_back(entityId);
+    }
   }
 
   return applicableEntityIds;
@@ -64,10 +66,11 @@ std::list<int> EntityManager::getEntityIdsWithComponents(std::list<int> componen
 
 // separate this into multiple functions
 void EntityManager::update() {
-    for (auto [systemId, system] : systems) {
-        // find all entites with components of interest
-        std::list<int> applicableEntityIds = getEntityIdsWithComponents(system->requiredComponents());
+  for (auto [systemId, system] : systems) {
+    // find all entites with components of interest
+    std::vector<int> applicableEntityIds =
+        getEntityIdsWithComponents(system->requiredComponents());
 
-        system->update(applicableEntityIds);
-    }
+    system->update(applicableEntityIds);
+  }
 }

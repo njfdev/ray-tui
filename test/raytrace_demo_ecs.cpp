@@ -97,7 +97,7 @@ class PlaneCastTest : public GameLoop {
             new Position{ .pos = Vec3{-2,0,7} },
             new Renderable{
                 .mat = white,
-                .geometry = PointLight{}
+                .geometry = EmptyGeometry {}
             }
         });
 
@@ -106,7 +106,7 @@ class PlaneCastTest : public GameLoop {
             new Position{ .pos = Vec3{8,0,1} },
             new Renderable{
                 .mat = red,
-                .geometry = PointLight{}
+                .geometry = EmptyGeometry {}
             }
         });
 
@@ -115,7 +115,7 @@ class PlaneCastTest : public GameLoop {
             new Position{ .pos = Vec3{-9,-5,4} },
             new Renderable{
                 .mat = blue,
-                .geometry = PointLight{}
+                .geometry = EmptyGeometry {}
             }
         });
 
@@ -180,6 +180,7 @@ class PlaneCastTest : public GameLoop {
 
 int main() {
   PlaneCastTest game{};
+    game.disable_render = true;
 
   game.run();
 }

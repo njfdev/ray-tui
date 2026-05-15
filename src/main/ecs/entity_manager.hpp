@@ -2,9 +2,10 @@
 
 #include "component.hpp"
 #include "system.hpp"
-#include <iostream>
-#include <list>
+#include <cstdint>
+#include <stdexcept>
 #include <map>
+#include <vector>
 
 const uint32_t MAX_ENTITIES = 100;
 
@@ -13,11 +14,11 @@ public:
     EntityManager();
 
     int createEntity();
-    int createEntity(std::list<Component*> comps);
+    int createEntity(std::vector<Component*> comps);
 
     void addComponent(int entityId, Component* comp);
 
-    std::list<int> getEntityIdsWithComponents(std::list<int> componentIds);
+    std::vector<int> getEntityIdsWithComponents(std::vector<int> componentIds);
 
     int addSystem(System* system);
 
@@ -25,9 +26,9 @@ public:
 
     template<typename C>
     C* getComponent(int entityId) {
-        std::list<Component*> entity = entities[entityId];
+        std::vector<Component*> entity = entities[entityId];
         for (Component* comp : entity) {
-            if (component_id<typeof *comp>() == component_id<C>()) {
+            if (comp->id == component_id<C>()) {
                 return reinterpret_cast<C*>(&comp);
             }
         }
@@ -38,7 +39,7 @@ public:
 private:
     int nextEntityId = 0;
     int nextSystemId = 0;
-    std::map<int, std::list<Component*>> entities;
+    std::map<int, std::vector<Component*>> entities;
     std::map<int, System*> systems;
 
 };
