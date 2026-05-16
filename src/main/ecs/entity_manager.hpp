@@ -28,7 +28,7 @@ public:
     C* getComponent(int entityId) {
         std::vector<Component*> entity = entities[entityId];
         for (Component* comp : entity) {
-            if (comp->id == component_id<C>()) {
+            if (comp->id() == component_id<C>()) {
                 return reinterpret_cast<C*>(&comp);
             }
         }

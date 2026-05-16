@@ -9,7 +9,7 @@ static int component_id() {
     return id;
 }
 
-struct Component {
-    int id = component_id<Component>();
+class Component {
+public:
+  virtual inline int id() { return component_id<Component>(); }
 };
-

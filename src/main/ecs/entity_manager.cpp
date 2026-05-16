@@ -1,6 +1,7 @@
 #include "entity_manager.hpp"
 #include "component.hpp"
 #include "system.hpp"
+#include <iostream>
 #include <map>
 #include <vector>
 
@@ -45,7 +46,7 @@ EntityManager::getEntityIdsWithComponents(std::vector<int> componentIds) {
     for (int req_comp_id : componentIds) {
       bool found = false;
       for (Component *comp : entity) {
-        if (comp->id == req_comp_id) {
+        if (comp->id() == req_comp_id) {
           found = true;
           break;
         }

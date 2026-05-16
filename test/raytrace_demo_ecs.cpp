@@ -8,6 +8,7 @@
 #include "scene/geometry.hpp"
 #include "scene/scene.hpp"
 #include <cmath>
+#include <iostream>
 #include <vector>
 
 const double MOVEMENT_SPEED = 10.0;
@@ -31,92 +32,62 @@ class PlaneCastTest : public GameLoop {
 
         // floor
         entityManager.createEntity({
-            new Position{ .pos = Vec3{0,0,0} },
-            new Renderable{
-                .mat = gray,
-                .geometry = Plane{ .normal = Vec3{0,0,1} }
-            }
+            new Position(Vec3{0,0,0}),
+            new Renderable(gray, Plane{ .normal = Vec3{0,0,1} })
         });
 
         // back wall
         entityManager.createEntity({
-            new Position{ .pos = Vec3{0,10,0} },
-            new Renderable{
-                .mat = gray,
-                .geometry = Plane{ .normal = Vec3{0,-1,0} }
-            }
+            new Position(Vec3{0,10,0}),
+            new Renderable(gray, Plane{ .normal = Vec3{0,-1,0} })
         });
 
         // left wall
         entityManager.createEntity({
-            new Position{ .pos = Vec3{-10,0,0} },
-            new Renderable{
-                .mat = gray,
-                .geometry = Plane{ .normal = Vec3{1,0,0} }
-            }
+            new Position(Vec3{-10,0,0}),
+            new Renderable(gray, Plane{ .normal = Vec3{1,0,0} })
         });
 
         // right wall
         entityManager.createEntity({
-            new Position{ .pos = Vec3{10,0,0} },
-            new Renderable{
-                .mat = gray,
-                .geometry = Plane{ .normal = Vec3{-1,0,0} }
-            }
+            new Position(Vec3{10,0,0}),
+            new Renderable(gray, Plane{ .normal = Vec3{-1,0,0} })
         });
 
         // yellow sphere
         entityManager.createEntity({
-            new Position{ .pos = Vec3{2,6,3} },
-            new Renderable{
-                .mat = yellow,
-                .geometry = Sphere{ .radius = 2.0 }
-            }
+            new Position(Vec3{2,6,3}),
+            new Renderable(yellow, Sphere{ .radius = 2.0 })
         });
 
         // purple sphere
         entityManager.createEntity({
-            new Position{ .pos = Vec3{-5,3,1} },
-            new Renderable{
-                .mat = purple,
-                .geometry = Sphere{ .radius = 1.5 }
-            }
+            new Position(Vec3{-5,3,1}),
+            new Renderable(purple, Sphere{ .radius = 1.5 })
         });
 
         // green sphere
         entityManager.createEntity({
-            new Position{ .pos = Vec3{5,-1,1.5} },
-            new Renderable{
-                .mat = green,
-                .geometry = Sphere{ .radius = 0.75 }
-            }
+            new Position(Vec3{5,-1,1.5}),
+            new Renderable(green, Sphere{ .radius = 0.75 })
         });
 
         // white light
         entityManager.createEntity({
-            new Position{ .pos = Vec3{-2,0,7} },
-            new Renderable{
-                .mat = white,
-                .geometry = EmptyGeometry {}
-            }
+            new Position(Vec3{-2,0,7}),
+            new Renderable(white, EmptyGeometry {})
         });
 
         // red light
         entityManager.createEntity({
-            new Position{ .pos = Vec3{8,0,1} },
-            new Renderable{
-                .mat = red,
-                .geometry = EmptyGeometry {}
-            }
+            new Position(Vec3{8,0,1}),
+            new Renderable(red, EmptyGeometry {})
         });
 
         // blue light
         entityManager.createEntity({
-            new Position{ .pos = Vec3{-9,-5,4} },
-            new Renderable{
-                .mat = blue,
-                .geometry = EmptyGeometry {}
-            }
+            new Position(Vec3{-9,-5,4}),
+            new Renderable(blue, EmptyGeometry {})
         });
 
         scene.background = Color{0.08, 0.08, 0.12};

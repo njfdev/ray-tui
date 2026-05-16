@@ -3,8 +3,12 @@
 #include "ecs/component.hpp"
 #include "math/vec3.hpp"
 
-struct Position : Component {
+class Position : public Component {
 public:
-    int id = component_id<Position>();
+    inline int id() override { return component_id<Position>(); }
     Vec3 pos;
+
+    Position(Vec3 pos) {
+      this->pos = pos;
+    }
 };
