@@ -18,10 +18,10 @@ RayTUI is ray-tracing within a terminal. That's it. We wanted to combine the cha
 ### Requirements
 - RayTUI only works on macOS (tested with Tahoe 26.4.1) and Linux.
 - A C++17 compiler (`gcc` or `clang`) and CMake
-- A terminal emulator (any is fine, but we recommend [Ghostty](https://ghostty.org/download))
+- A terminal (any is fine, but we recommend [Ghostty](https://ghostty.org/download))
 
 ### Setup
-1. Open your terminal emulator
+1. Open your terminal
 2. Navigate to any folder
 3. Run `git clone https://github.com/njfdev/ray-tui.git`
 4. Run `cd ray-tui`
@@ -30,6 +30,8 @@ RayTUI is ray-tracing within a terminal. That's it. We wanted to combine the cha
 The demo applications should now be successfully compiled!
 
 ### Usage
+> ⚠️ If this is your first time running on macOS, you may be prompted to allow input monitoring when running a demo. Please visit the [Privacy Permissions for macOS](#privacy-permissions-for-macos) section to learn more.
+
 From the `ray-tui` folder, all you have to do is run `./build/<demo-name>`. You can stop the demo by pressing `CTRL-C` or `CMD-C`.
 
 Controls:
@@ -54,3 +56,15 @@ The available demos are listed below.
 <br/>
 <img width="500" alt="Screenshot 2026-05-17 at 9 08 26 AM" src="https://github.com/user-attachments/assets/9950ea28-dc6c-4b0c-8b00-93d1bfb11f31" />
 
+### Privacy Permissions for macOS
+When running one of these demos for the first time within your terminal, macOS will likely prompt you for input monitoring permissions, as shown below:
+<br/>
+<img width="550" alt="Screenshot 2026-05-17 at 9 39 54 AM" src="https://github.com/user-attachments/assets/57d39c3a-1a70-4f47-88a5-e59da1332fa3" />
+
+> The reason for this is that RayTUI uses global input handling to allow movement with the keyboard (because native terminal APIs for input handling aren't great).
+
+To enable input monitoring, you can press the "Open System Settings" button, which should take you to `Privacy & Security -> Input Monitoring` in system settings. Then, you can add the terminal you are running RayTUI in to the list and enable the toggle:
+<br/>
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/cacf0130-2ad6-47fb-aa39-adbf83315fbc" />
+
+Then restart the RayTUI demo, and now keyboard movement should work!
