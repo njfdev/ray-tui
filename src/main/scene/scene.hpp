@@ -1,15 +1,11 @@
 #pragma once
 
-#include "material.hpp"
+#include "ecs/entity_manager.hpp"
 #include "math/ray.hpp"
 #include "math/intersection.hpp"
 #include "render/bvh.hpp"
 #include "render/color.hpp"
 #include "render/framebuffer.hpp"
-#include "scene/light.hpp"
-#include <functional>
-#include <queue>
-#include <vector>
 
 struct BounceConfig {
   int reflect;
@@ -19,18 +15,21 @@ struct BounceConfig {
 
 class Scene {
 public:
-  std::vector<PointLight> lights;
+  EntityManager* entityManager;
   Color background;
   double fovh;
   int cur_frame;
 
+  Scene(EntityManager* entityManager);
+
+  void construct();
+
   void render(Framebuffer* fb, Ray camera);
 
-  SceneObject* add_object(Shape shape, Material mat);
-  void remove_object(SceneObject*);
+  // void remove_object(SceneObject*);
 
   BVH bvh = BVH();
 private:
   Intersection trace(Ray &ray, double min_dist);
-  double traceLight(Vec3 p, Vec3 normal, PointLight light);
+  double traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin);
 };

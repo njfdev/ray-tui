@@ -1,5 +1,8 @@
 #include "render/bvh.hpp"
 #include "math/intersection.hpp"
+#include "scene/components/position.hpp"
+#include "scene/components/renderable.hpp"
+#include "scene/geometry.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -178,10 +181,10 @@ static int serialize(std::vector<BVH::BVH4Node> &nodes, const TempNode *node) {
   return idx;
 }
 
-SceneObject* BVH::insert(Shape shape, AABB bounds, SceneObject obj) {
+RenderData* BVH::insert(AABB bounds, Position origin, Renderable appearance) {
   uint32_t idx = static_cast<uint32_t>(shapes.size());
-  shapes.push_back(shape);
-  objs.push_back(obj);
+  shapes.push_back(appearance.geometry);
+  objs.push_back(RenderData{origin, appearance});
   this->bounds.push_back(bounds);
   return &objs.back();
 }

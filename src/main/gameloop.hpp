@@ -1,7 +1,6 @@
 #pragma once
 
 #include <chrono>
-#include <cmath>
 #include "input/input.hpp"
 #include "render/framebuffer.hpp"
 
@@ -25,7 +24,7 @@ protected:
     int height() { return screen_height; }
 
     virtual void init() = 0;
-    virtual void update(double_t dt) = 0;
+    virtual void update(double dt) = 0;
     virtual void cleanup() = 0;
 
 private:

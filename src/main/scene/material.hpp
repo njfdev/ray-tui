@@ -4,9 +4,9 @@
 
 struct Material {
   Color color;
-  double specular;
-  double diffuse;
-  double opacity;
-  double refract;
-  double refractIdx;
+  double specular = 0.0;
+  double diffuse = 1.0;
+  double opacity = 1.0;
+  double refract = 0.0;
+  double refractIdx = 1.0;
 };
