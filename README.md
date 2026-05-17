@@ -37,6 +37,7 @@ From the `ray-tui` folder, all you have to do is run `./build/<demo-name>`. You 
 
 Controls:
 - WASD to move around
+- Q to rotate counter-clockwise, E to rotate clockwise
 - R to move up, F to move down
 
 The available demos are listed below.
