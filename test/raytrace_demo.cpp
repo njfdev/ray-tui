@@ -8,7 +8,6 @@
 #include "scene/geometry.hpp"
 #include "scene/scene.hpp"
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 const double MOVEMENT_SPEED = 10.0;
@@ -17,11 +16,13 @@ const double ROTATION_SPEED = 5.0;
 class PlaneCastTest : public GameLoop {
     EntityManager entityManager{};
     Scene scene{&entityManager};
+
     Ray camera{Vec3{0.0, 1.0, 0.0}.normalize(), Vec3{0.0, 0.0, 0.0}};
 
     double t = 0.0;
 
     void init() override {
+        // create object materials
         Material red{Color{0.8, 0.0, 0.0}};
         Material blue{Color{0.0, 0.0, 0.8}};
         Material gray{Color{0.2, 0.2, 0.2}};
@@ -90,24 +91,26 @@ class PlaneCastTest : public GameLoop {
             new Renderable(blue, EmptyGeometry {})
         });
 
+        // build the scene
         scene.background = Color{0.08, 0.08, 0.12};
         scene.fovh = 1.2;
         scene.construct();
     }
 
+  // variables to keep track of camera movement
   double angle = 3.14159/2;
   double x = 0.0;
   double y = -10.0;
   double z = 2.0;
 
-  void update(double_t dt) override {
-    scene.render(&fb, camera);
-
+  void processInputs(double dt) {
+    // movement velocities
     double vx = 0.0;
     double vy = 0.0;
     double vz = 0.0;
-    double w = 0.0;
+    double vw = 0.0;
 
+    // check keyboard inputs and update corresponding velocity
     if (input.isKeyPressed(Key::W)) {
         vx += 1.0;
     }
@@ -127,23 +130,32 @@ class PlaneCastTest : public GameLoop {
         vz -= 1.0;
     }
     if (input.isKeyPressed(Key::Q)) {
-        w += 1.0;
+        vw += 1.0;
     }
     if (input.isKeyPressed(Key::E)) {
-        w -= 1.0;
+        vw -= 1.0;
     }
 
+    // apply velocities and scale based on movement speeds
     x += (cos(angle)*vx - sin(angle)*vy) * MOVEMENT_SPEED * dt;
     y += (sin(angle)*vx + cos(angle)*vy) * MOVEMENT_SPEED * dt;
     z += vz * MOVEMENT_SPEED * dt;
-    angle += w * ROTATION_SPEED * dt;
+    angle += vw * ROTATION_SPEED * dt;
+  }
 
+  void update(double_t dt) override {
+    processInputs(dt);
+
+    // update camera location based on processed inputs
     camera.direction = Vec3{static_cast<float>(cos(angle)), static_cast<float>(sin(angle)), 0.0};
     camera.origin.x = x;
     camera.origin.y = y;
     camera.origin.z = z;
 
     t += dt;
+
+    // update the framebuffer
+    scene.render(&fb, camera);
   }
 
   void cleanup() override {}

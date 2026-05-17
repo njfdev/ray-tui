@@ -1,7 +1,5 @@
 #include "intersection.hpp"
 #include "scene/geometry.hpp"
-#include <iostream>
-#include <stdexcept>
 
 Intersection intersect(const Ray &ray, Vec3 origin, const Sphere &sphere) {
   // tried analytical approach and it wasnt working for some reason, using

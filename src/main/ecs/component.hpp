@@ -1,7 +1,5 @@
 #pragma once
 
-#include <type_traits>
-
 static int component_type_index = 0;
 template<typename T>
 static int component_id() {

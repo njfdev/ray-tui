@@ -1,10 +1,7 @@
 #include "math/intersection.hpp"
 #include "render/bvh.hpp"
 #include <algorithm>
-#include <cmath>
-#include <cstdint>
 #include <limits>
-#include <optional>
 
 Intersection BVH::BVH4Node::intersect_c(BVH *bvh, float rix, float riy,
                                         float riz, float roix, float roiy,

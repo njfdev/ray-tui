@@ -1,7 +1,6 @@
 #include "entity_manager.hpp"
 #include "component.hpp"
 #include "system.hpp"
-#include <iostream>
 #include <map>
 #include <vector>
 

@@ -1,15 +1,11 @@
 #pragma once
 
 #include "ecs/entity_manager.hpp"
-#include "material.hpp"
 #include "math/ray.hpp"
 #include "math/intersection.hpp"
 #include "render/bvh.hpp"
 #include "render/color.hpp"
 #include "render/framebuffer.hpp"
-#include <functional>
-#include <queue>
-#include <vector>
 
 struct BounceConfig {
   int reflect;

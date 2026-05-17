@@ -9,9 +9,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <iostream>
-#include <iterator>
-#include <type_traits>
 #include <variant>
 
 Scene::Scene(EntityManager *entityManager) {
