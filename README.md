@@ -8,7 +8,8 @@
 RayTUI is ray-tracing within a terminal. That's it. We wanted to combine the challenge of building a ray-tracer from scratch and figuring out how to render in a terminal to depict 3D environments!
 
 ## Key Features
-- BVHs
+- Bounding volume hierarchies (BVHs)
+- Simple entity component system (ECS)
 - ANSI escape sequences for terminal formatting
 - Global input handling
 - No 3rd-party dependencies
