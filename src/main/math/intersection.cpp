@@ -1,5 +1,7 @@
 #include "intersection.hpp"
 #include "scene/geometry.hpp"
+#include <iostream>
+#include <stdexcept>
 
 Intersection intersect(const Ray &ray, Vec3 origin, const Sphere &sphere) {
   // tried analytical approach and it wasnt working for some reason, using
@@ -91,6 +93,10 @@ AABB bounds(Vec3 origin, const Plane &plane) {
   return AABB{origin - offset, origin + offset};
 }
 
+AABB bounds(Vec3 origin, const EmptyGeometry &empty) {
+  return AABB{};
+}
+
 Intersection intersect(const Ray &r, Vec3 origin, const Geometry &shape) {
   // leaving normal unnormalized, normalizin
   return std::visit([&](const auto &s) { return intersect(r, origin, s); }, shape);
@@ -98,5 +104,7 @@ Intersection intersect(const Ray &r, Vec3 origin, const Geometry &shape) {
 
 AABB bounds(Vec3 origin, const Geometry &shape) {
   // leaving normal unnormalized, normalizin
-  return std::visit([&](const auto &s) { return bounds(origin, s); }, shape);
+  return std::visit([&](const auto &s) {
+    return bounds(origin, s);
+  }, shape);
 }

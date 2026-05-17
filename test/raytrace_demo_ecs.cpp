@@ -151,7 +151,6 @@ class PlaneCastTest : public GameLoop {
 
 int main() {
   PlaneCastTest game{};
-    game.disable_render = true;
 
   game.run();
 }

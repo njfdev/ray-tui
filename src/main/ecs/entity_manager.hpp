@@ -29,7 +29,7 @@ public:
         std::vector<Component*> entity = entities[entityId];
         for (Component* comp : entity) {
             if (comp->id() == component_id<C>()) {
-                return reinterpret_cast<C*>(&comp);
+                return static_cast<C*>(comp);
             }
         }
 

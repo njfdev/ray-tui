@@ -44,17 +44,10 @@ void Tui::render(Framebuffer &fb, int width, int height) {
       s = snprintf(fmtBuf, sizeof(fmtBuf), "\033[48;2;%d;%d;%dm▀", bot_px.r,
                    bot_px.g, bot_px.b);
       stringBuf.append(fmtBuf, s);
-
-      // std::cout << "\033[38;2;" << +top_px.r << ";" << +top_px.g << ";"
-      //           << +top_px.b << "m";
-      //
-      // std::cout << "\033[48;2;" << +bot_px.r << ";" << +bot_px.g << ";"
-      //           << +bot_px.b << "m▀";
     }
 
     if (r + 1 != height) {
       stringBuf += '\n';
-      // std::cout << std::endl;
     }
   }
 

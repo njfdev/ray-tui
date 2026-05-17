@@ -26,6 +26,7 @@ Intersection intersect(const Ray &ray, Vec3 origin, const Plane &plane);
 
 AABB bounds(Vec3 origin, const Sphere &sphere);
 AABB bounds(Vec3 origin, const Plane &plane);
+AABB bounds(Vec3 origin, const EmptyGeometry &empty);
 
 Intersection intersect(const Ray &r, Vec3 origin, const Geometry &shape);
 AABB bounds(Vec3 origin, const Geometry &shape);

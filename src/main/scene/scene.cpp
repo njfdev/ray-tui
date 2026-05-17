@@ -135,23 +135,17 @@ double Scene::traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin) {
 }
 
 void Scene::construct() {
-  std::cout << "CONSTRUCT CALLED" << std::endl;
   for (int entityId : entityManager->getEntityIdsWithComponents(
            {component_id<Position>(), component_id<Renderable>()})) {
     Position *origin = entityManager->getComponent<Position>(entityId);
     Renderable *appearance = entityManager->getComponent<Renderable>(entityId);
 
-    std::cout << "GOT SHAPE" << std::endl;
-
     if (std::holds_alternative<EmptyGeometry>(appearance->geometry)) {
       continue;
     }
 
-    std::cout << "ADDING SHAPE" << std::endl;
-
     bvh.insert(bounds(origin->pos, appearance->geometry), *origin, *appearance);
   }
 
-  std::cout << "FILTER END" << std::endl;
   bvh.construct();
 }
