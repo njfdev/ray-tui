@@ -8,6 +8,12 @@ EntityManager::EntityManager() {
   entities = std::map<int, std::vector<Component *>>();
 }
 
+EntityManager::~EntityManager() {
+  for (const auto& [id, sys] : systems) {
+    sys->cleanup(this);
+  }
+}
+
 int EntityManager::createEntity() {
   int id = nextEntityId++;
 
@@ -33,14 +39,16 @@ int EntityManager::addSystem(System *system) {
 
   systems.insert({id, system});
 
+  system->init(this);
+
   return id;
 }
 
-std::vector<int>
-EntityManager::getEntityIdsWithComponents(std::vector<int> componentIds) {
+std::vector<int> EntityManager::getEntityIdsWithComponents(std::vector<int> componentIds) {
   std::vector<int> applicableEntityIds{};
 
   for (auto [entityId, entity] : entities) {
+    // check if this entity contains all the required components
     bool found_all = true;
     for (int req_comp_id : componentIds) {
       bool found = false;
@@ -56,21 +64,25 @@ EntityManager::getEntityIdsWithComponents(std::vector<int> componentIds) {
         break;
       }
     }
+
     if (found_all) {
       applicableEntityIds.push_back(entityId);
     }
   }
 
   return applicableEntityIds;
+  // O(n^3)
 }
 
-// separate this into multiple functions
-void EntityManager::update() {
-  for (auto [systemId, system] : systems) {
+void EntityManager::update(double dt) {
+  for (int i = 0; i < systems.size(); i++) {
     // find all entites with components of interest
     std::vector<int> applicableEntityIds =
-        getEntityIdsWithComponents(system->requiredComponents());
+        getEntityIdsWithComponents(systems[i]->requiredComponents());
 
-    system->update(applicableEntityIds);
+    // apply the system to those entities
+    systems[i]->update(dt, this, applicableEntityIds);
   }
+
+  // O(n^4)
 }

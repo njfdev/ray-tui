@@ -1,25 +1,18 @@
 #include "gameloop.hpp"
-#include "math/ray.hpp"
 #include "math/vec3.hpp"
 #include "render/color.hpp"
 #include "ecs/entity_manager.hpp"
+#include "scene/components/camera.hpp"
 #include "scene/components/renderable.hpp"
 #include "scene/components/position.hpp"
 #include "scene/geometry.hpp"
-#include "scene/scene.hpp"
+#include "scene/systems/movement.hpp"
+#include "scene/systems/renderer.hpp"
 #include <cmath>
 #include <vector>
 
-const double MOVEMENT_SPEED = 10.0;
-const double ROTATION_SPEED = 5.0;
-
 class PlaneCastTest : public GameLoop {
     EntityManager entityManager{};
-    Scene scene{&entityManager};
-
-    Ray camera{Vec3{0.0, 1.0, 0.0}.normalize(), Vec3{0.0, 0.0, 0.0}};
-
-    double t = 0.0;
 
     void init() override {
         // create object materials
@@ -91,71 +84,18 @@ class PlaneCastTest : public GameLoop {
             new Renderable(blue, EmptyGeometry {})
         });
 
-        // build the scene
-        scene.background = Color{0.08, 0.08, 0.12};
-        scene.fovh = 1.2;
-        scene.construct();
-    }
+        // camera
+        entityManager.createEntity({
+            new Position(Vec3{0, -10, 2}),
+            new Camera(Vec3{0, 1, 0}.normalize())
+        });
 
-  // variables to keep track of camera movement
-  double angle = 3.14159/2;
-  double x = 0.0;
-  double y = -10.0;
-  double z = 2.0;
-
-  void processInputs(double dt) {
-    // movement velocities
-    double vx = 0.0;
-    double vy = 0.0;
-    double vz = 0.0;
-    double vw = 0.0;
-
-    // check keyboard inputs and update corresponding velocity
-    if (input.isKeyPressed(Key::W)) {
-        vx += 1.0;
+        entityManager.addSystem(new Renderer(&fb));
+        entityManager.addSystem(new CameraMovement(&input));
     }
-    if (input.isKeyPressed(Key::S)) {
-        vx -= 1.0;
-    }
-    if (input.isKeyPressed(Key::A)) {
-        vy += 1.0;
-    }
-    if (input.isKeyPressed(Key::D)) {
-        vy -= 1.0;
-    }
-    if (input.isKeyPressed(Key::R)) {
-        vz += 1.0;
-    }
-    if (input.isKeyPressed(Key::F)) {
-        vz -= 1.0;
-    }
-    if (input.isKeyPressed(Key::Q)) {
-        vw += 1.0;
-    }
-    if (input.isKeyPressed(Key::E)) {
-        vw -= 1.0;
-    }
-
-    // apply velocities and scale based on movement speeds
-    x += (cos(angle)*vx - sin(angle)*vy) * MOVEMENT_SPEED * dt;
-    y += (sin(angle)*vx + cos(angle)*vy) * MOVEMENT_SPEED * dt;
-    z += vz * MOVEMENT_SPEED * dt;
-    angle += vw * ROTATION_SPEED * dt;
-  }
 
   void update(double_t dt) override {
-    processInputs(dt);
-
-    // update camera location based on processed inputs
-    camera.direction = Vec3{static_cast<float>(cos(angle)), static_cast<float>(sin(angle)), 0.0};
-    camera.origin.x = x;
-    camera.origin.y = y;
-    camera.origin.z = z;
-
-    t += dt;
-
-    // update the framebuffer
-    scene.render(&fb, camera);
+    entityManager.update(dt);
   }
 
   void cleanup() override {}

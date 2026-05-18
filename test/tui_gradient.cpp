@@ -16,6 +16,8 @@ class Game : public GameLoop {
                   static_cast<uint8_t>(y*255 / h), 0};
       }
     }
+
+    // O(n^2)
   }
 
   void cleanup() override {}
