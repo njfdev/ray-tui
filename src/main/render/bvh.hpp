@@ -13,10 +13,6 @@
 #include <immintrin.h>
 #endif // AVX
 
-#ifdef ARM_NEON
-#include <arm_neon.h>
-#endif // ARM_NEON
-
 class BVH {
 public:
   // storing quantized positions, 0 is lo of parent and 255 is hi of parent
@@ -54,17 +50,6 @@ public:
                              float roix, float roiy, float roiz, float sxf,
                              float syf, float szf, float ploxf, float ployf,
                              float plozf, float tminf, float tmaxf);
-
-#ifdef ARM_NEON
-    //  similar to avx args
-    std::optional<uint32_t> intersect_neon(float32x4_t rix, float32x4_t riy,
-                                           float32x4_t riz, float32x4_t roix,
-                                           float32x4_t roiy, float32x4_t roiz,
-                                           float32x4_t sx, float32x4_t sy,
-                                           float32x4_t sz, float32x4_t plox,
-                                           float32x4_t ploy, float32x4_t ploz,
-                                           float tminf, float tmaxf);
-#endif // ARM_NEON
 
 #ifdef AVX
     Intersection intersect_avx(BVH *bvh, __m256 rix, __m256 riy,

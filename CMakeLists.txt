@@ -9,7 +9,6 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(USE_AVX OFF)
-option(USE_ARM OFF)
 
 file(GLOB_RECURSE all_sources src/main/*.cpp src/main/*.hpp)
 
@@ -27,11 +26,6 @@ endif()
 if(USE_AVX)
     target_compile_options(cli PRIVATE -msse4.1 -mavx2 -mfma -mbmi)
     target_compile_definitions(cli PRIVATE AVX)
-endif()
-
-if(USE_ARM)
-    target_compile_options(cli PRIVATE -march=armv8-a+simd)
-    target_compile_definitions(cli PRIVATE ARM_NEON)
 endif()
 
 enable_testing()

@@ -88,105 +88,6 @@ Intersection BVH::BVH4Node::intersect_c(BVH *bvh, float rix, float riy,
   return best;
 }
 
-#ifdef ARM_NEON
-#include <arm_neon.h>
-
-std::optional<uint32_t>
-BVH4Node::intersect_neon(float32x4_t rix, float32x4_t riy, float32x4_t riz,
-                         float32x4_t roix, float32x4_t roiy, float32x4_t roiz,
-                         float32x4_t sx, float32x4_t sy, float32x4_t sz,
-                         float32x4_t plox, float32x4_t ploy, float32x4_t ploz,
-                         float tminf, float tmaxf) {
-  if (internal.children[0] == 0)
-    return std::optional(leaf.ptr);
-
-  // basically the same as avx.
-
-  // dequantize
-  uint16x8_t x = vmovl_u8(vcreate_u8(internal.xlohi));
-  uint16x8_t y = vmovl_u8(vcreate_u8(internal.ylohi));
-  uint16x8_t z = vmovl_u8(vcreate_u8(internal.zlohi));
-
-  float32x4_t xlo =
-      vmlaq_f32(plox, vcvtq_f32_u32(vmovl_u16(vget_low_u16(x))), sx);
-  float32x4_t xhi =
-      vmlaq_f32(plox, vcvtq_f32_u32(vmovl_u16(vget_high_u16(x))), sx);
-  float32x4_t ylo =
-      vmlaq_f32(ploy, vcvtq_f32_u32(vmovl_u16(vget_low_u16(y))), sy);
-  float32x4_t yhi =
-      vmlaq_f32(ploy, vcvtq_f32_u32(vmovl_u16(vget_high_u16(y))), sy);
-  float32x4_t zlo =
-      vmlaq_f32(ploz, vcvtq_f32_u32(vmovl_u16(vget_low_u16(z))), sz);
-  float32x4_t zhi =
-      vmlaq_f32(ploz, vcvtq_f32_u32(vmovl_u16(vget_high_u16(z))), sz);
-
-  // slab test
-  float32x4_t txlo = vfmaq_f32(roix, xlo, rix);
-  float32x4_t txhi = vfmaq_f32(roix, xhi, rix);
-  float32x4_t tc = vminq_f32(txlo, txhi);
-  float32x4_t tf = vmaxq_f32(txlo, txhi);
-
-  float32x4_t tylo = vfmaq_f32(roiy, ylo, riy);
-  float32x4_t tyhi = vfmaq_f32(roiy, yhi, riy);
-  tc = vmaxq_f32(tc, vminq_f32(tylo, tyhi));
-  tf = vminq_f32(tf, vmaxq_f32(tylo, tyhi));
-
-  float32x4_t tzlo = vfmaq_f32(roiz, zlo, riz);
-  float32x4_t tzhi = vfmaq_f32(roiz, zhi, riz);
-  tc = vmaxq_f32(tc, vminq_f32(tzlo, tzhi));
-  tf = vminq_f32(tf, vmaxq_f32(tzlo, tzhi));
-
-  tc = vmaxq_f32(tc, vdupq_n_f32(tminf));
-  tf = vminq_f32(tf, vdupq_n_f32(tmaxf));
-
-  uint32x4_t hit_mask = vcleq_f32(tc, tf);
-  float32x4_t inf = vdupq_n_f32(std::numeric_limits<float>::infinity());
-  float32x4_t ts = vbslq_f32(hit_mask, tc, inf);
-
-  float tsf[4];
-  float xlo_a[4], xhi_a[4], ylo_a[4], yhi_a[4], zlo_a[4], zhi_a[4];
-  vst1q_f32(tsf, ts);
-  vst1q_f32(xlo_a, xlo);
-  vst1q_f32(xhi_a, xhi);
-  vst1q_f32(ylo_a, ylo);
-  vst1q_f32(yhi_a, yhi);
-  vst1q_f32(zlo_a, zlo);
-  vst1q_f32(zhi_a, zhi);
-
-  // lane i contributes bit i of the mask. vaddvq is horizontal sum
-  static const uint32_t lane_bits_arr[4] = {1u, 2u, 4u, 8u};
-  const uint32x4_t lane_bits = vld1q_u32(lane_bits_arr);
-
-  while (true) {
-    // min reduction like avx shuffle
-    float32x4_t min = vdupq_n_f32(vminvq_f32(ts));
-    uint32x4_t is_min = vceqq_f32(ts, min);
-    uint32_t min_bit =
-        vaddvq_u32(vandq_u32(vandq_u32(hit_mask, is_min), lane_bits));
-    if (min_bit == 0)
-      return {};
-    int min_i = __builtin_ctz(min_bit);
-
-    float child_sx = (xhi_a[min_i] - xlo_a[min_i]) / 255.0f;
-    float child_sy = (yhi_a[min_i] - ylo_a[min_i]) / 255.0f;
-    float child_sz = (zhi_a[min_i] - zlo_a[min_i]) / 255.0f;
-
-    auto res = this[internal.children[min_i]].intersect_neon(
-        rix, riy, riz, roix, roiy, roiz, vdupq_n_f32(child_sx),
-        vdupq_n_f32(child_sy), vdupq_n_f32(child_sz), vdupq_n_f32(xlo_a[min_i]),
-        vdupq_n_f32(ylo_a[min_i]), vdupq_n_f32(zlo_a[min_i]), tminf,
-        tmaxf - tsf[min_i]);
-
-    if (res.has_value())
-      return res;
-
-    // remove closest and re sorts to find next closest
-    hit_mask = vandq_u32(hit_mask, vmvnq_u32(is_min));
-    ts = vbslq_f32(is_min, inf, ts);
-  }
-}
-#endif // ARM_NEON
-
 Intersection BVH::BVH4Node::intersect(BVH *bvh, Ray ray, Vec3 parent_lo,
                                       Vec3 parent_hi) {
   float sxf = (parent_hi.x - parent_lo.x) / 255.0f;
@@ -210,12 +111,6 @@ Intersection BVH::BVH4Node::intersect(BVH *bvh, Ray ray, Vec3 parent_lo,
       _mm256_set1_ps(sxf), _mm256_set1_ps(syf), _mm256_set1_ps(szf),
       _mm256_set1_ps(parent_lo.x), _mm256_set1_ps(parent_lo.y),
       _mm256_set1_ps(parent_lo.z), tminf, tmaxf);
-#elif defined(ARM_NEON)
-  return intersect_neon(
-      vdupq_n_f32(rix), vdupq_n_f32(riy), vdupq_n_f32(riz), vdupq_n_f32(-roix),
-      vdupq_n_f32(-roiy), vdupq_n_f32(-roiz), vdupq_n_f32(sxf),
-      vdupq_n_f32(syf), vdupq_n_f32(szf), vdupq_n_f32(parent_lo.x),
-      vdupq_n_f32(parent_lo.y), vdupq_n_f32(parent_lo.z), tminf, tmaxf);
 #else
   return intersect_c(bvh, rix, riy, riz, roix, roiy, roiz, sxf, syf, szf,
                      parent_lo.x, parent_lo.y, parent_lo.z, tminf, tmaxf);
@@ -223,7 +118,6 @@ Intersection BVH::BVH4Node::intersect(BVH *bvh, Ray ray, Vec3 parent_lo,
 }
 
 #ifdef AVX
-
 // with a lot of help from
 // https://db.in.tum.de/~finis/x86-intrin-cheatsheet-v2.1.pdf or random
 // searches
