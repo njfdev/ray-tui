@@ -128,7 +128,7 @@ double Scene::traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin) {
 
     return weight;
   }
-  return 0.0;
+  return 0.05;
 }
 
 void Scene::construct() {
