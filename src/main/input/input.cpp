@@ -20,11 +20,11 @@ void Input::update() {
 
     for (RawInputs::RawKeyEvent event : events) {
         keyCodeStates[event.keycode] = event.down;
-        // std::cout << event.keycode << ": " << event.down << std::endl;
     }
 }
 
 bool Input::isKeyPressed(Key key) {
+    // manually disable all keyboard inputs if the terminal isn't focused
     return isTerminalFocused && keyCodeStates[(int)key];
 }
 
@@ -34,6 +34,7 @@ void Input::updateFocusedStatus() {
         return;
     }
 
+    // manually check for ANSI sequence (\033[I or \033[O) telling terminal focus state
     char c;
     int indexToAnsiSequence = 0;
     struct pollfd pfd = { STDIN_FILENO, POLLIN, 0 };

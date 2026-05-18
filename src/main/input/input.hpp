@@ -2,6 +2,10 @@
 
 #include "input/raw_inputs.hpp"
 
+/**
+ * macOS mapping of keyboard keys to their keycodes, where
+ * the enum index is the keycode.
+ */
 enum Key {
     A = 0,
     S,
@@ -58,13 +62,37 @@ enum Key {
     ESCAPE,
 };
 
+/**
+ * Wrapper around the RawInputs interface to OS/terminal specific
+ * keyboard handling. Input allows a program to check the current
+ * on/off state of any key.
+ */
 class Input {
 public:
+    /**
+     * Create a new Input instance. This constructor also prepares
+     * the terminal for focus reporting.
+     *
+     * @return newly created Input instance
+     */
     Input();
+    /**
+     * Cleanup the terminal state from focus reporting mode.
+     */
     ~Input();
 
+    /**
+     * Updates the state of the keyboard. Should be called once
+     * at the beginning of each update loop.
+     */
     void update();
 
+    /**
+     * Check the on/off state of a single key.
+     *
+     * @param key which key to check
+     * @return the status of that key
+     */
     bool isKeyPressed(Key key);
 
 
@@ -74,6 +102,9 @@ private:
 
     bool isTerminalFocused = true;
 
+    /**
+     * Check whether the terminal is focused or not to filter inputs
+     */
     void updateFocusedStatus();
     bool isInputBuffered();
 

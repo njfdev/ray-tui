@@ -3,9 +3,12 @@
 #include "ecs/system.hpp"
 #include "scene/scene.hpp"
 
-class Renderer : public System {
+/**
+ * System to handling ray tracing of the 3D environment.
+ */
+class RayTracer : public System {
 public:
-  Renderer(Framebuffer* fb);
+  RayTracer(Framebuffer* fb);
 
 private:
   Scene* scene;

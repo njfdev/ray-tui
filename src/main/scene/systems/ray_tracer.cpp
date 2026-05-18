@@ -1,4 +1,4 @@
-#include "renderer.hpp"
+#include "ray_tracer.hpp"
 #include "ecs/component.hpp"
 #include "ecs/entity_manager.hpp"
 #include "render/framebuffer.hpp"
@@ -6,16 +6,17 @@
 #include "scene/components/position.hpp"
 #include "scene/components/renderable.hpp"
 
-Renderer::Renderer(Framebuffer* fb) {
+RayTracer::RayTracer(Framebuffer* fb) {
+  // scene will be assigned later, since it needs access to EntityManager
   scene = nullptr;
   this->fb = fb;
 }
 
-std::vector<int> Renderer::requiredComponents() {
+std::vector<int> RayTracer::requiredComponents() {
   return { component_id<Position>(), component_id<Renderable>() };
 }
 
-void Renderer::init(EntityManager* entityManager) {
+void RayTracer::init(EntityManager* entityManager) {
   scene = new Scene(entityManager);
 
   // build the scene
@@ -24,13 +25,14 @@ void Renderer::init(EntityManager* entityManager) {
   scene->construct();
 }
 
-void Renderer::update(double dt, EntityManager* entityManager, std::vector<int> entityIds) {
+void RayTracer::update(double dt, EntityManager* entityManager, std::vector<int> entityIds) {
+  // get pointers to the first camera's components
   int cameraId = entityManager->getEntityIdsWithComponents({ component_id<Position>(), component_id<Camera>() })[0];
   Position* cameraOrigin = entityManager->getComponent<Position>(cameraId);
   Camera* cameraDirection = entityManager->getComponent<Camera>(cameraId);
 
   // update the framebuffer
-  scene->render(fb, Ray(cameraDirection->direction, cameraOrigin->pos));//Ray{Vec3{0,1,0},Vec3{0,-10,2}});
+  scene->render(fb, Ray(cameraDirection->direction, cameraOrigin->pos));
 }
 
-void Renderer::cleanup(EntityManager* entityManager) {}
+void RayTracer::cleanup(EntityManager* entityManager) {}

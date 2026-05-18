@@ -2,6 +2,9 @@
 
 #include "render/color.hpp"
 
+/**
+ * Data for the physical material appearance of an object
+ */
 struct Material {
   Color color;
   double specular = 0.0;

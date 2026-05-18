@@ -7,7 +7,7 @@
 #include "scene/components/position.hpp"
 #include "scene/geometry.hpp"
 #include "scene/systems/movement.hpp"
-#include "scene/systems/renderer.hpp"
+#include "scene/systems/ray_tracer.hpp"
 #include <cmath>
 #include <vector>
 
@@ -90,7 +90,7 @@ class PlaneCastTest : public GameLoop {
             new Camera(Vec3{0, 1, 0}.normalize())
         });
 
-        entityManager.addSystem(new Renderer(&fb));
+        entityManager.addSystem(new RayTracer(&fb));
         entityManager.addSystem(new CameraMovement(&input));
     }
 
