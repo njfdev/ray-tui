@@ -221,6 +221,13 @@ class Demo : public GameLoop {
                        EmptyGeometry{}),
     });
 
+
+    em.createEntity({
+        new Position({0.0f, 0.0f, 10.0f}),
+        new Renderable(Material{.color = {1.0, 0.5, 0.75, 1.0}},
+                       EmptyGeometry{}),
+    });
+
     em.addSystem(new RayTracer(&fb));
     em.addSystem(new CameraMovement(&input));
   }
