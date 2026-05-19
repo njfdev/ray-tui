@@ -17,6 +17,8 @@
 #elif defined(__linux__)
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#include <iostream>
+#include <cstdint>
 #endif
 
 #if defined(__APPLE__)
