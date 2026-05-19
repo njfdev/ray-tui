@@ -27,7 +27,10 @@ public:
   void render(Framebuffer* fb, Ray camera);
 
   BVH bvh = BVH();
+  BounceConfig bounceConfig = {2, 1, 0};
+
 private:
   Intersection trace(Ray &ray, double min_dist);
   double traceLight(Vec3 p, Vec3 normal, Vec3 lightOrigin);
+  Color castRay(Ray ray, int depth);
 };

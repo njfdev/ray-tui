@@ -190,8 +190,8 @@ BVH::BVHObjectID BVH::insert(Position pos, Renderable renderable) {
 }
 
 void BVH::remove(BVHObjectID id) {
-  auto res = std::find(objs.begin(), objs.end(),
-                       [id](auto it) { return it.idx == id.id; });
+  auto res = std::find_if(objs.begin(), objs.end(),
+                          [id](RenderData it) { return it.id == id.id; });
   if (res == objs.end())
     return;
   res->appearance.geometry = EmptyGeometry{};

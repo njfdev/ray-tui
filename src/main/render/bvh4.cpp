@@ -289,7 +289,7 @@ Intersection BVH::BVH4Node::intersect_avx(BVH *bvh, __m256 rix, __m256 riy,
                  // hit left it will always be because dist of miss is infinity.
     int min_bit = _mm_movemask_ps(valid_min);
     if (min_bit == 0)
-      return {}; // no collision
+      return best;
     int min_i = _tzcnt_u32(min_bit);
 
     int offset = internal.children[min_i];
@@ -321,6 +321,7 @@ Intersection BVH::BVH4Node::intersect_avx(BVH *bvh, __m256 rix, __m256 riy,
     __m128 visited = _mm_castsi128_ps(
         _mm_cmpeq_epi32(_mm_set_epi32(3, 2, 1, 0), _mm_set1_epi32(min_i)));
     ts = _mm_blendv_ps(ts, inf, visited);
+    hit_mask = _mm_andnot_ps(visited, hit_mask);
   }
 
   return best;

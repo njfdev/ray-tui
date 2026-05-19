@@ -6,14 +6,14 @@
  */
 struct Ray {
   /**
-   * origin of the ray
-   */
-  Vec3 origin;
-
-  /**
    * direction of the ray
    */
   Vec3 direction;
+
+  /**
+   * origin of the ray
+   */
+  Vec3 origin;
 
   /**
    * constructs a ray centered at the origin

@@ -124,6 +124,9 @@ public:
    * @param renderable the renderable component of the object
    *
    * @returns the ID of the inserted object
+   *
+   *
+   * Time complexity: O(1)
    */
   BVHObjectID insert(Position pos, Renderable renderable);
 
@@ -132,6 +135,8 @@ public:
    * {construct} is called it will be eliminated
    *
    * @param obj the id of the object to remove
+   *
+   * Time complexity: O(N) (needs to search for matching ID)
    */
   void remove(BVHObjectID obj);
 
