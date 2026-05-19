@@ -11,13 +11,13 @@
 #include <memory>
 #include <vector>
 
-struct BuildPrim {
+struct BVH::BuildPrim {
   uint32_t idx;
   AABB bounds;
   Vec3 centroid;
 };
 
-struct TempNode {
+struct BVH::TempNode {
   bool is_leaf;
   AABB bounds;
   uint32_t prim_idx;
@@ -34,15 +34,15 @@ static AABB aabb_union(const AABB &a, const AABB &b) {
   };
 }
 
-static AABB prims_bounds(std::vector<BuildPrim> &prims, int lo, int hi) {
+AABB BVH::prims_bounds(std::vector<BVH::BuildPrim> &prims, int lo, int hi) {
   AABB b = prims[lo].bounds;
   for (int i = lo + 1; i < hi; i++)
     b = aabb_union(b, prims[i].bounds);
   return b;
 }
 
-static std::unique_ptr<TempNode> build_node(std::vector<BuildPrim> &prims,
-                                            int lo, int hi) {
+std::unique_ptr<BVH::TempNode> BVH::build_node(std::vector<BuildPrim> &prims,
+                                               int lo, int hi) {
   int len = hi - lo;
   assert(n > 0);
 
@@ -131,14 +131,14 @@ static uint8_t quantize(double val, double lo, double span, bool is_lo) {
   return static_cast<uint8_t>(q);
 }
 
-static int serialize(std::vector<BVH::BVH4Node> &nodes, const TempNode *node) {
+int BVH::serialize(std::vector<BVH::BVH4Node> &nodes, const TempNode *node) {
   int idx = static_cast<int>(nodes.size());
-  nodes.push_back(BVH::BVH4Node{}); // add temp for this node, need to visit children
-                               // before filling it.
+  nodes.push_back(BVH::BVH4Node{}); // add temp for this node, need to visit
+                                    // children before filling it.
 
   if (node->is_leaf) {
     nodes[idx].leaf.children[0] = 0; // leaf tag
-    nodes[idx].leaf.ptr = node->prim_idx;
+    nodes[idx].leaf.idx = node->prim_idx;
     return idx;
   }
 
@@ -181,7 +181,7 @@ static int serialize(std::vector<BVH::BVH4Node> &nodes, const TempNode *node) {
   return idx;
 }
 
-RenderData* BVH::insert(AABB bounds, Position origin, Renderable appearance) {
+RenderData *BVH::insert(AABB bounds, Position origin, Renderable appearance) {
   uint32_t idx = static_cast<uint32_t>(shapes.size());
   shapes.push_back(appearance.geometry);
   objs.push_back(RenderData{origin, appearance});
