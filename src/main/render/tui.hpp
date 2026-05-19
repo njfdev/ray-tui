@@ -7,7 +7,7 @@
 class Tui {
 public:
   void init();
-  void render(Framebuffer &src, int width, int height);
+  void render(Framebuffer &src);
   void cleanup();
   void getRenderDimensions(int *width, int *height);
 

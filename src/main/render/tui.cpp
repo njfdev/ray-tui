@@ -17,8 +17,8 @@ void Tui::init() {
   // std::ios::sync_with_stdio(false);
 }
 
-void Tui::render(Framebuffer &fb, int width, int height) {
-    height /= 2;
+void Tui::render(Framebuffer &fb) {
+  int height = fb.h / 2;
 
   stringBuf.clear();
 
@@ -31,9 +31,9 @@ void Tui::render(Framebuffer &fb, int width, int height) {
   // if it helps
   for (int r = 0; r < height; r++) {
     int y = r * 2;
-    for (int c = 0; c < width; c++) {
-      Pixel top_px = fb.color(c, y, width, height * 2);
-      Pixel bot_px = fb.color(c, y + 1, width, height * 2);
+    for (int c = 0; c < fb.w; c++) {
+      Pixel top_px = fb.color(c, y);
+      Pixel bot_px = fb.color(c, y + 1);
 
       // genuinely what was going through the head of whoever made terminal ANSI
       // escape sequences and also C formatting strings lol
