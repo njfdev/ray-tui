@@ -6,7 +6,6 @@
 #include "render/render_data.hpp"
 #include "scene/components/position.hpp"
 #include "scene/components/renderable.hpp"
-#include "scene/geometry.hpp"
 #include <cstdint>
 #include <memory>
 #include <vector>

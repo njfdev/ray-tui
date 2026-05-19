@@ -1,7 +1,5 @@
 #include "ecs/entity_manager.hpp"
 #include "gameloop.hpp"
-#include "math/vec3.hpp"
-#include "render/color.hpp"
 #include "scene/components/camera.hpp"
 #include "scene/components/position.hpp"
 #include "scene/components/renderable.hpp"
