@@ -19,30 +19,6 @@ Intersection Scene::trace(Ray &ray, double min_dist) {
   return bvh.intersect(ray);
 }
 
-// SceneObject* Scene::add_object(Shape shape, Material mat) {
-//   auto res = SceneObject { mat, nullptr };
-//   return bvh.insert(shape, bounds(shape), res);
-//   // if(!empty_slots.empty()) {
-//   //   int i = empty_slots.top();
-//   //   empty_slots.pop();
-//   //   shapes[i] = shape;
-//   //
-//   //   object_data[i] = SceneObject {
-//   //     mat, &shapes[i]
-//   //   };
-//   //
-//   //   return &object_data.at(i);
-//   // };
-//   //
-//   // shapes.push_back(shape);
-//   //
-//   // object_data.push_back(SceneObject {
-//   //   mat, &shapes.back()
-//   // });
-//   //
-//   // return &object_data.back();
-// }
-
 void Scene::render(Framebuffer *fb, Ray fwd) {
   int w = fb->w;
   int h = fb->h;

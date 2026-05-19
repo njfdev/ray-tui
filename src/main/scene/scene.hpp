@@ -26,8 +26,6 @@ public:
 
   void render(Framebuffer* fb, Ray camera);
 
-  // void remove_object(SceneObject*);
-
   BVH bvh = BVH();
 private:
   Intersection trace(Ray &ray, double min_dist);
