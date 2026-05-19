@@ -1,6 +1,8 @@
 #include "intersection.hpp"
 #include "scene/geometry.hpp"
 
+// ray-sphere intersection
+// O(1)
 Intersection intersect(const Ray &ray, Vec3 origin, const Sphere &sphere) {
   // tried analytical approach and it wasnt working for some reason, using
   // geometric.
@@ -46,6 +48,9 @@ Intersection intersect(const Ray &ray, Vec3 origin, const Sphere &sphere) {
   return Intersection{t0, p, normal};
 }
 
+// ray-plane intersection
+// O(1)
+//
 // inspired by
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection.html
 // ray collides with face that has normal going out of it
@@ -68,6 +73,15 @@ Intersection intersect(const Ray &ray, Vec3 origin, const Plane &plane) {
   return Intersection{t, p, plane.normal};
 }
 
+// ray-empty intersection
+// O(1)
+Intersection intersect(const Ray &ray, Vec3 origin,
+                       const EmptyGeometry &empty) {
+  return Intersection {};
+}
+
+// axis aligned bounds on sphere, used for BVH construction
+// O(1)
 AABB bounds(Vec3 origin, const Sphere &sphere) {
   return AABB{
       origin - Vec3{1.0, 1.0, 1.0} * sphere.radius,
@@ -75,6 +89,8 @@ AABB bounds(Vec3 origin, const Sphere &sphere) {
   };
 }
 
+// axis aligned bounds on plane, used for BVH construction
+// O(1)
 AABB bounds(Vec3 origin, const Plane &plane) {
   Vec3 z = Vec3{0.0, 0.0, 1.0};
   if (plane.normal == z) {
@@ -86,23 +102,22 @@ AABB bounds(Vec3 origin, const Plane &plane) {
 
   Vec3 c1 = axis1 * plane.extent + axis2 * plane.extent;
 
-  Vec3 offset = Vec3{std::abs(c1.x) , std::abs(c1.y), std::abs(c1.z)};
+  Vec3 offset = Vec3{std::abs(c1.x), std::abs(c1.y), std::abs(c1.z)};
 
   return AABB{origin - offset, origin + offset};
 }
 
-AABB bounds(Vec3 origin, const EmptyGeometry &empty) {
-  return AABB{};
-}
+// axis aligned bounds on empty, used for BVH construction
+// O(1)
+AABB bounds(Vec3 origin, const EmptyGeometry &empty) { return AABB{}; }
 
 Intersection intersect(const Ray &r, Vec3 origin, const Geometry &shape) {
   // leaving normal unnormalized, normalizin
-  return std::visit([&](const auto &s) { return intersect(r, origin, s); }, shape);
+  return std::visit([&](const auto &s) { return intersect(r, origin, s); },
+                    shape);
 }
 
 AABB bounds(Vec3 origin, const Geometry &shape) {
   // leaving normal unnormalized, normalizin
-  return std::visit([&](const auto &s) {
-    return bounds(origin, s);
-  }, shape);
+  return std::visit([&](const auto &s) { return bounds(origin, s); }, shape);
 }
