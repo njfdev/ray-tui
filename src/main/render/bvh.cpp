@@ -1,5 +1,6 @@
 #include "render/bvh.hpp"
 #include "math/intersection.hpp"
+#include "render/render_data.hpp"
 #include "scene/components/position.hpp"
 #include "scene/components/renderable.hpp"
 #include "scene/geometry.hpp"
@@ -122,6 +123,7 @@ static uint8_t quantize(double val, double lo, double span, bool is_lo) {
     // lo, need to round down to not underestimate bounding box
     q = std::floor(q);
   } else {
+    // hi, need to round down to not underestimate bounding box
     q = std::ceil(q);
   }
   if (q < 0.0)
@@ -181,18 +183,18 @@ int BVH::serialize(std::vector<BVH::BVH4Node> &nodes, const TempNode *node) {
   return idx;
 }
 
-RenderData *BVH::insert(AABB bounds, Position origin, Renderable appearance) {
-  uint32_t idx = static_cast<uint32_t>(shapes.size());
-  shapes.push_back(appearance.geometry);
-  objs.push_back(RenderData{origin, appearance});
-  this->bounds.push_back(bounds);
-  return &objs.back();
+BVH::BVHObjectID BVH::insert(Position pos, Renderable renderable) {
+  uint32_t idx = static_cast<uint32_t>(objs.size());
+  objs.push_back(RenderData{pos, renderable, idx});
+  return BVHObjectID{idx};
 }
 
-void BVH::remove(uint32_t idx) {
-  // set to degenerate aabb, will be cleaned up on next construct.
-  bounds[idx] = {{(float)INFINITY, (float)INFINITY, (float)INFINITY},
-                 {(float)-INFINITY, (float)-INFINITY, (float)-INFINITY}};
+void BVH::remove(BVHObjectID id) {
+  auto res = std::find(objs.begin(), objs.end(),
+                       [id](auto it) { return it.idx == id.id; });
+  if (res == objs.end())
+    return;
+  res->appearance.geometry = EmptyGeometry{};
 }
 
 void BVH::construct() {
@@ -200,14 +202,14 @@ void BVH::construct() {
 
   // alive primitives
   std::vector<BuildPrim> prims;
-  prims.reserve(shapes.size());
+  prims.reserve(objs.size());
 
   AABB rb = {{(float)INFINITY, (float)INFINITY, (float)INFINITY},
              {(float)-INFINITY, (float)-INFINITY, (float)-INFINITY}};
   bool any = false;
 
-  for (uint32_t i = 0; i < static_cast<uint32_t>(shapes.size()); i++) {
-    const AABB &b = bounds[i];
+  for (uint32_t i = 0; i < static_cast<uint32_t>(objs.size()); i++) {
+    const AABB &b = ::bounds(objs[i].origin.pos, objs[i].appearance.geometry);
     if (b.lo.x > b.hi.x)
       continue; // disabled
 

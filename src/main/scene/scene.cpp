@@ -4,6 +4,7 @@
 #include "math/vec3.hpp"
 #include "render/bvh.hpp"
 #include "render/framebuffer.hpp"
+#include "render/render_data.hpp"
 #include "scene/components/position.hpp"
 #include "scene/components/renderable.hpp"
 #include <cmath>
@@ -117,7 +118,7 @@ void Scene::construct() {
       continue;
     }
 
-    bvh.insert(bounds(origin->pos, appearance->geometry), *origin, *appearance);
+    bvh.insert(RenderData { *origin, *appearance });
   }
 
   bvh.construct();

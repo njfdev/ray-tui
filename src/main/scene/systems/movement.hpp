@@ -6,6 +6,9 @@
 const double MOVEMENT_SPEED = 10.0;
 const double ROTATION_SPEED = 5.0;
 
+/**
+ * System to handle camera movement given user inputs
+ */
 class CameraMovement : public System {
   public:
     CameraMovement(Input* input);

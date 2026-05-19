@@ -3,6 +3,7 @@
 #include "math/intersection.hpp"
 #include "math/ray.hpp"
 #include "math/vec3.hpp"
+#include "render/render_data.hpp"
 #include "scene/components/position.hpp"
 #include "scene/components/renderable.hpp"
 #include "scene/geometry.hpp"
@@ -96,9 +97,7 @@ private:
   static_assert(alignof(BVH4Node) == 32);
 
   std::vector<BVH4Node> nodes = {};
-  std::vector<Geometry> shapes = {};
   std::vector<RenderData> objs = {};
-  std::vector<AABB> bounds = {};
   AABB root_bounds = {};
   Ray cur_ray = Ray(Vec3{1.0, 0.0, 0.0});
 
@@ -113,11 +112,65 @@ private:
   static AABB prims_bounds(std::vector<BVH::BuildPrim> &prims, int lo, int hi);
 
 public:
-  RenderData *insert(AABB bounds, Position origin, Renderable appearance);
+  struct BVHObjectID {
+    uint32_t id;
+  };
 
-  void remove(uint32_t obj);
+  /**
+   * Inserts an object into the BVH. The BVH must be constructed before the
+   * object is visible
+   *
+   * @param pos the position component of the object
+   * @param renderable the renderable component of the object
+   *
+   * @returns the ID of the inserted object
+   */
+  BVHObjectID insert(Position pos, Renderable renderable);
 
+  /**
+   * Removes an object from the BVH. It will first hide it, then the next time
+   * {construct} is called it will be eliminated
+   *
+   * @param obj the id of the object to remove
+   */
+  void remove(BVHObjectID obj);
+
+  /**
+   * Constructs the BVH.
+   *
+   * Time complexity:
+   * At each depth it
+   * - computes prims_bounds -> O(N)
+   * - sorts the range using std::sort -> O(N log(N)) (has to resort bc it
+   * chooses different split axi)
+   * - splits into 4 equal groups and recurses (next layer still visits all
+   * nodes)
+   *
+   * result: O(N log(N)) * depth. Since splits into 4 for every depth, depth =
+   * log(N)
+   *
+   * total: O(N*log(N)*log(N))
+   */
   void construct();
 
+  /**
+   * Intersects a ray with the BVH.
+   *
+   * @param ray the ray to intersect
+   *
+   * Time complexity (average):
+   * N is the number of objects.
+   * for a well built sparse BVH, ray will only hit 1/2 child BVHs per node,
+   * resulting in O(log N) traversal. all ray-geometry intersections are O(1).
+   *
+   * Average: O(log N)
+   *
+   * Time complexity (worst case):
+   * N is the number of objects.
+   * if the ray intersects with every bounding box at every level, will visit
+   * O(N + N/4 + N/16 < 2N) nodes.
+   *
+   * Worse case: O(N)
+   */
   Intersection intersect(Ray ray);
 };
